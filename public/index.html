@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Songwright — Suno V5 Prompt Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   SONGWRIGHT — DARK THEME / COPPER ACCENT
+   ═══════════════════════════════════════════ */
+:root {
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #161616;
+  --bg-tertiary: #1e1e1e;
+  --bg-card: #1a1a1a;
+  --border: #2a2a2a;
+  --border-focus: #b87333;
+  --copper: #b87333;
+  --copper-light: #d4956b;
+  --copper-dark: #8b5a2b;
+  --amber: #d4a24e;
+  --text-primary: #e8e0d6;
+  --text-secondary: #a09888;
+  --text-muted: #6b6358;
+  --green: #4a9;
+  --yellow: #d4a24e;
+  --red: #c44;
+  --font-mono: 'DM Mono', monospace;
+  --font-serif: 'Cormorant Garamond', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 300;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.header h1 {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--copper-light);
+  letter-spacing: 2px;
+}
+.header .subtitle {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+/* Layout */
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+}
+
+/* Panels */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px;
+}
+.panel-title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--copper-light);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 1px;
+}
+
+/* Form elements */
+label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+label:first-child { margin-top: 0; }
+
+select, input[type="number"], input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+select:focus, input:focus, textarea:focus {
+  border-color: var(--border-focus);
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+
+/* Row layouts */
+.row { display: flex; gap: 12px; }
+.row > * { flex: 1; }
+
+/* Chips / tags */
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.chip {
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-secondary);
+  user-select: none;
+}
+.chip:hover { border-color: var(--copper); color: var(--text-primary); }
+.chip.active {
+  background: var(--copper-dark);
+  border-color: var(--copper);
+  color: #fff;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn:hover { border-color: var(--copper); background: var(--bg-secondary); }
+.btn-primary {
+  background: var(--copper-dark);
+  border-color: var(--copper);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--copper); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-copy { position: relative; }
+.btn-copy.copied { border-color: var(--green); color: var(--green); }
+
+/* Preview box */
+.preview-box {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  min-height: 60px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary);
+}
+
+/* Counters / indicators */
+.counter {
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+.counter.green { color: var(--green); }
+.counter.yellow { color: var(--yellow); }
+.counter.red { color: var(--red); }
+
+/* Descriptor count badge */
+.descriptor-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+.descriptor-badge.green { background: rgba(68,170,153,0.15); color: var(--green); }
+.descriptor-badge.yellow { background: rgba(212,162,78,0.15); color: var(--yellow); }
+.descriptor-badge.red { background: rgba(204,68,68,0.15); color: var(--red); }
+
+/* Pronunciation highlights */
+.lyrics-display {
+  position: relative;
+}
+.lyrics-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+/* Risk popup */
+.risk-popup {
+  position: fixed;
+  background: var(--bg-card);
+  border: 1px solid var(--copper);
+  border-radius: 4px;
+  padding: 12px;
+  max-width: 320px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  font-size: 12px;
+  display: none;
+}
+.risk-popup .risk-level {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+.risk-popup .risk-level.high { color: var(--red); }
+.risk-popup .risk-level.medium { color: var(--yellow); }
+.risk-popup .risk-level.low { color: var(--text-muted); }
+
+/* Section counter */
+.section-counter {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin: 2px 0;
+}
+.section-counter.ok { color: var(--green); }
+.section-counter.warn { color: var(--red); }
+
+/* Quality check results */
+.qc-card {
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  border-left: 3px solid var(--border);
+}
+.qc-card.pass { border-left-color: var(--green); }
+.qc-card.warn { border-left-color: var(--yellow); }
+.qc-card.fail { border-left-color: var(--red); }
+.qc-card .qc-name {
+  font-weight: 500;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.qc-card .qc-status {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  float: right;
+}
+.qc-card .qc-status.pass { color: var(--green); }
+.qc-card .qc-status.warn { color: var(--yellow); }
+.qc-card .qc-status.fail { color: var(--red); }
+.qc-card .qc-details {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.qc-card .qc-fix {
+  font-size: 11px;
+  color: var(--copper-light);
+  margin-top: 4px;
+}
+
+/* Output boxes */
+.output-box {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  min-height: 80px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Template buttons */
+.template-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+/* Search input for tags */
+.search-input {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  outline: none;
+  margin-bottom: 6px;
+}
+.search-input:focus { border-color: var(--border-focus); }
+
+/* Tag search results */
+.tag-results {
+  max-height: 150px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  display: none;
+}
+.tag-results.visible { display: block; }
+.tag-result-item {
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.tag-result-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Selected tags */
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.selected-tag {
+  padding: 3px 8px;
+  background: var(--copper-dark);
+  border: 1px solid var(--copper);
+  border-radius: 10px;
+  font-size: 10px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.selected-tag .remove { opacity: 0.6; }
+.selected-tag:hover .remove { opacity: 1; }
+
+/* Loading spinner */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--copper);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Genre info display */
+.genre-info {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.genre-info strong { color: var(--text-secondary); }
+
+/* Pronunciation risk list */
+.risk-list {
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.risk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.risk-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.risk-dot.high { background: var(--red); }
+.risk-dot.medium { background: var(--yellow); }
+.risk-dot.low { background: var(--text-muted); }
+
+/* Section counters sidebar */
+.section-counts {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Suno link */
+.suno-link {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: var(--copper-dark);
+  border: 1px solid var(--copper);
+  border-radius: 3px;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: background 0.15s;
+}
+.suno-link:hover { background: var(--copper); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Songwright</h1>
+  <span class="subtitle">Suno V5 Prompt Engine</span>
+</div>
+
+<div class="app">
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 1: STYLE PROMPT BUILDER
+       ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-style">
+    <div class="panel-title">Style Prompt Builder</div>
+
+    <label>Genre</label>
+    <input type="text" id="genre-search" class="search-input" placeholder="Search genres..." autocomplete="off">
+    <select id="genre-select"></select>
+
+    <div class="genre-info" id="genre-info" style="display:none;"></div>
+
+    <div class="row">
+      <div>
+        <label>BPM</label>
+        <input type="number" id="bpm-input" min="40" max="220" placeholder="120">
+      </div>
+      <div>
+        <label>Key (optional)</label>
+        <select id="key-select">
+          <option value="">Any</option>
+        </select>
+      </div>
+    </div>
+
+    <label>Mood / Energy</label>
+    <div class="chip-container" id="mood-chips"></div>
+
+    <label>Instruments (search &amp; select)</label>
+    <input type="text" id="instrument-search" class="search-input" placeholder="Search 500+ tags..." autocomplete="off">
+    <div class="tag-results" id="instrument-results"></div>
+    <div class="selected-tags" id="selected-instruments"></div>
+
+    <label>Vocal Description</label>
+    <div class="row">
+      <div>
+        <label style="margin-top:0">Gender</label>
+        <select id="vocal-gender">
+          <option value="">Any</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div>
+        <label style="margin-top:0">Texture</label>
+        <select id="vocal-texture"><option value="">Select...</option></select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Style</label>
+        <select id="vocal-style"><option value="">Select...</option></select>
+      </div>
+      <div>
+        <label>Regional (optional)</label>
+        <select id="vocal-regional"><option value="">None</option></select>
+      </div>
+    </div>
+
+    <label>Production Notes (optional)</label>
+    <input type="text" id="production-notes" placeholder="e.g. Analog glue compression; tape saturation">
+
+    <label>
+      Live Preview
+      <span class="descriptor-badge" id="descriptor-badge"></span>
+    </label>
+    <div class="preview-box" id="style-preview">Select a genre to begin...</div>
+    <div class="counter" id="char-counter">0 / 1000 characters</div>
+    <button class="btn btn-copy" id="copy-style" onclick="copyToClipboard('style-preview', this)">Copy Style Prompt</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 2: LYRICS EDITOR
+       ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-lyrics">
+    <div class="panel-title">Lyrics Editor</div>
+
+    <label>Structure Templates</label>
+    <div class="template-bar" id="template-bar"></div>
+
+    <label>Lyrics</label>
+    <textarea id="lyrics-input" rows="20" placeholder="Write or paste your lyrics here...&#10;&#10;Use structure tags like [Verse 1], [Chorus], etc.&#10;The pronunciation scanner will highlight risky words as you type."></textarea>
+
+    <div class="row" style="margin-top:8px;">
+      <div class="counter" id="word-counter">0 words</div>
+      <div class="counter" id="lyrics-word-limit"></div>
+    </div>
+
+    <label>Section Lengths</label>
+    <div class="section-counts" id="section-counts"></div>
+
+    <label>Pronunciation Risks</label>
+    <div class="risk-list" id="risk-list">
+      <div style="color:var(--text-muted); font-size:11px;">Type lyrics above to scan...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 3: QUALITY CHECK
+       ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-quality">
+    <div class="panel-title">Quality Check</div>
+    <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">
+      AI-powered 13-point lyric analysis via Claude API.
+      Requires lyrics and a selected genre.
+    </p>
+    <button class="btn btn-primary" id="run-quality-check" onclick="runQualityCheck()">
+      Run Quality Check
+    </button>
+    <div id="qc-results" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANEL 4: SUNO-READY OUTPUT
+       ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-output">
+    <div class="panel-title">Suno-Ready Output</div>
+
+    <label>Style Prompt (copy to Suno's style field)</label>
+    <div class="output-box" id="final-style-output"></div>
+    <button class="btn btn-copy btn-sm" style="margin-top:6px;" onclick="copyToClipboard('final-style-output', this)">Copy</button>
+
+    <label>Lyrics (copy to Suno's lyrics field)</label>
+    <div class="output-box" id="final-lyrics-output"></div>
+    <button class="btn btn-copy btn-sm" style="margin-top:6px;" onclick="copyToClipboard('final-lyrics-output', this)">Copy</button>
+
+    <a href="https://suno.com/create" target="_blank" rel="noopener" class="suno-link">Open Suno</a>
+  </div>
+
+</div>
+
+<!-- Risk popup (shared) -->
+<div class="risk-popup" id="risk-popup">
+  <div class="risk-level" id="popup-risk-level"></div>
+  <div id="popup-issue"></div>
+  <div id="popup-suggestion" style="color:var(--copper-light); margin-top:6px;"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// INLINED DATA MODULES
+// ═══════════════════════════════════════════════════════════════
+
+// --- GENRE DATABASE (67 genres) ---
+const genreDatabase = {
+  rock:{name:"Rock",defaultLinesPerVerse:6,bpmRange:"110-130",densityNotes:"130-140: 4 lines. 120 BPM sweet spot",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Direct, energetic, emotionally charged with strong hooks"},
+  alternative:{name:"Alternative",defaultLinesPerVerse:6,bpmRange:"110-130",densityNotes:"<110: up to 8. 130-140: 4. Quiet-loud dynamics",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Introspective, unconventional imagery"},
+  "indie-rock":{name:"Indie Rock",defaultLinesPerVerse:6,bpmRange:"110-120",densityNotes:"100-110: up to 8. 120-130: 4-6",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Conversational, clever, slightly detached"},
+  "garage-rock":{name:"Garage Rock",defaultLinesPerVerse:4,bpmRange:"120-140",densityNotes:"140-160: 3-4. Repetition over variety",defaultRhymeScheme:"ABAB",topicsPerVerse:"1-2",lyricalCharacter:"Raw, lo-fi, primal energy"},
+  grunge:{name:"Grunge",defaultLinesPerVerse:6,bpmRange:"110-120",densityNotes:"<100: up to 8. Keep raw/sparse",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Angst-driven, disaffected"},
+  punk:{name:"Punk",defaultLinesPerVerse:4,bpmRange:"150-180",densityNotes:"160+: 2-3 lines. NEVER exceed 4",defaultRhymeScheme:"AABB",topicsPerVerse:"1-2",lyricalCharacter:"Aggressive, fast and blunt"},
+  "hardcore-punk":{name:"Hardcore Punk",defaultLinesPerVerse:"2-3",bpmRange:"180-220+",densityNotes:"Extreme tempo, barely intelligible",defaultRhymeScheme:"AABB",topicsPerVerse:"1",lyricalCharacter:"Screamed, furious"},
+  emo:{name:"Emo",defaultLinesPerVerse:6,bpmRange:"110-140",densityNotes:"<115: up to 8. Fast emo-punk 140-160: 4",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Confessional, vulnerable"},
+  "post-rock":{name:"Post-Rock",defaultLinesPerVerse:"2-4",bpmRange:"variable",densityNotes:"Often fully instrumental",defaultRhymeScheme:"Free",topicsPerVerse:"1",lyricalCharacter:"Sparse poetic fragments"},
+  "progressive-rock":{name:"Progressive Rock",defaultLinesPerVerse:"8-10",bpmRange:"variable",densityNotes:"THE EXCEPTION. 90-110: up to 12. 130+: 6-8",defaultRhymeScheme:"ABAB",topicsPerVerse:"3-4",lyricalCharacter:"Epic, literary, concept-driven"},
+  "psychedelic-rock":{name:"Psychedelic Rock",defaultLinesPerVerse:6,bpmRange:"100-120",densityNotes:"<100: up to 8. Surreal imagery OK",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Surreal, stream-of-consciousness"},
+  shoegaze:{name:"Shoegaze",defaultLinesPerVerse:4,bpmRange:"80-110",densityNotes:"Vocals are texture, not focus",defaultRhymeScheme:"Free",topicsPerVerse:"1",lyricalCharacter:"Dreamy, buried in reverb"},
+  "surf-rock":{name:"Surf Rock",defaultLinesPerVerse:4,bpmRange:"130-160",densityNotes:"Often instrumental",defaultRhymeScheme:"ABAB",topicsPerVerse:"1-2",lyricalCharacter:"Breezy, carefree"},
+  "new-wave":{name:"New Wave",defaultLinesPerVerse:"4-6",bpmRange:"110-130",densityNotes:"130-140: 4",defaultRhymeScheme:"ABAB",topicsPerVerse:"1-2",lyricalCharacter:"Quirky, synth-tinged, artful"},
+  "celtic-punk":{name:"Celtic Punk",defaultLinesPerVerse:"4-6",bpmRange:"130-160",densityNotes:"150+: 4. Singalong choruses",defaultRhymeScheme:"AABB",topicsPerVerse:"1-2",lyricalCharacter:"Rousing, pub-anthem energy"},
+  "ska-punk":{name:"Ska Punk",defaultLinesPerVerse:4,bpmRange:"140-170",densityNotes:"Horn sections need room",defaultRhymeScheme:"AABB",topicsPerVerse:"1-2",lyricalCharacter:"Upbeat, bouncy rhythms"},
+  "piano-rock":{name:"Piano Rock",defaultLinesPerVerse:6,bpmRange:"100-120",densityNotes:"Ballad <100: up to 8",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Melodic, emotive, piano-driven"},
+  metal:{name:"Metal",defaultLinesPerVerse:"6-8",bpmRange:"100-140",densityNotes:"Vocal delivery compresses syllables",defaultRhymeScheme:"ABAB or free",topicsPerVerse:"2-3",lyricalCharacter:"Powerful, dark imagery"},
+  "black-metal":{name:"Black Metal",defaultLinesPerVerse:"6-8",bpmRange:"130-200",densityNotes:"Atmospheric alternates with blasts",defaultRhymeScheme:"ABAB or free",topicsPerVerse:"2-3",lyricalCharacter:"Occult, atmospheric, shrieked"},
+  "doom-metal":{name:"Doom Metal",defaultLinesPerVerse:4,bpmRange:"60-100",densityNotes:"Funeral doom <60: 2-4. NEVER exceed 6",defaultRhymeScheme:"ABAB or free",topicsPerVerse:"1-2",lyricalCharacter:"Slow, crushing, mournful"},
+  "thrash-metal":{name:"Thrash Metal",defaultLinesPerVerse:"8-10",bpmRange:"150-200+",densityNotes:"May rush past 10 lines in Suno",defaultRhymeScheme:"ABAB or free",topicsPerVerse:"3-4",lyricalCharacter:"Rapid-fire aggression"},
+  metalcore:{name:"Metalcore",defaultLinesPerVerse:"6-8",bpmRange:"120-140",densityNotes:"Breakdown sections: 2-4 chant-friendly lines",defaultRhymeScheme:"ABAB or free",topicsPerVerse:"2-3",lyricalCharacter:"Alternating screams and clean vocals"},
+  industrial:{name:"Industrial",defaultLinesPerVerse:"4-6",bpmRange:"100-130",densityNotes:"Mechanical, syllables lock to machine rhythms",defaultRhymeScheme:"ABAB or free",topicsPerVerse:"1-2",lyricalCharacter:"Cold, mechanical, repetitive"},
+  electronic:{name:"Electronic",defaultLinesPerVerse:4,bpmRange:"120-140",densityNotes:"Vocals are texture. Production is star",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1-2",lyricalCharacter:"Minimalist, hook-focused"},
+  edm:{name:"EDM",defaultLinesPerVerse:"2-4",bpmRange:"126-132",densityNotes:"Festival hooks, minimal verses",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Anthemic one-liners"},
+  house:{name:"House",defaultLinesPerVerse:2,bpmRange:"120-130",densityNotes:"Single ideas looped",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Soulful vocal snippets looped"},
+  techno:{name:"Techno",defaultLinesPerVerse:"1-2",bpmRange:"125-150",densityNotes:"Minimal/no vocals",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Hypnotic, machine-like"},
+  trance:{name:"Trance",defaultLinesPerVerse:"2-4",bpmRange:"128-150",densityNotes:"Simple phrases timed to build/drop",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Euphoric, uplifting"},
+  dubstep:{name:"Dubstep",defaultLinesPerVerse:"2-4",bpmRange:"140 (half-time 70)",densityNotes:"Bass drops need vocal space",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Dark, heavy bass drops"},
+  "drum-and-bass":{name:"Drum and Bass",defaultLinesPerVerse:"2-4",bpmRange:"160-180",densityNotes:"Fastest electronic genre",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Rapid-fire or soulful over breakneck rhythms"},
+  synthwave:{name:"Synthwave",defaultLinesPerVerse:"4-6",bpmRange:"90-120",densityNotes:"Retro 80s movie soundtrack feel",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1-2",lyricalCharacter:"Nostalgic, retro-futuristic"},
+  ambient:{name:"Ambient",defaultLinesPerVerse:"0-2",bpmRange:"60-100",densityNotes:"Often instrumental",defaultRhymeScheme:"Free",topicsPerVerse:"1",lyricalCharacter:"Barely-there whispers"},
+  chillwave:{name:"Chillwave",defaultLinesPerVerse:"2-4",bpmRange:"80-110",densityNotes:"Hazy, nostalgic",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Sun-bleached, washed-out"},
+  "lo-fi":{name:"Lo-Fi",defaultLinesPerVerse:"2-4",bpmRange:"60-90",densityNotes:"Chill study-music aesthetic",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Gentle, murmured"},
+  vaporwave:{name:"Vaporwave",defaultLinesPerVerse:"0-2",bpmRange:"60-90",densityNotes:"Slowed, chopped samples",defaultRhymeScheme:"Free",topicsPerVerse:"1",lyricalCharacter:"Ironic, consumer-culture pastiche"},
+  hyperpop:{name:"Hyperpop",defaultLinesPerVerse:3,bpmRange:"140-170",densityNotes:"160+: 2-3. Fragment ideas",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1",lyricalCharacter:"Glitchy, maximal, pitch-shifted chaos"},
+  disco:{name:"Disco",defaultLinesPerVerse:"4-6",bpmRange:"110-130",densityNotes:"Four-on-the-floor, dancefloor clarity",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1-2",lyricalCharacter:"Glamorous, celebratory"},
+  "trip-hop":{name:"Trip-Hop",defaultLinesPerVerse:"4-6",bpmRange:"80-100",densityNotes:"More lyrical than other electronic",defaultRhymeScheme:"Free or AABB",topicsPerVerse:"1-2",lyricalCharacter:"Moody, cinematic, smoky"},
+  "hip-hop":{name:"Hip-Hop",defaultLinesPerVerse:8,bpmRange:"85-95",densityNotes:"80-85: max 6. NEVER exceed 8",defaultRhymeScheme:"AABB couplets",topicsPerVerse:"3-4",lyricalCharacter:"Rhythmic wordplay, flow is everything"},
+  trap:{name:"Trap",defaultLinesPerVerse:8,bpmRange:"130-170 (half-time 65-85)",densityNotes:"65-70 effective: max 6",defaultRhymeScheme:"AABB couplets",topicsPerVerse:"3-4",lyricalCharacter:"Dark, boastful, triplet flows"},
+  drill:{name:"Drill",defaultLinesPerVerse:8,bpmRange:"140-145",densityNotes:"Never exceed 8",defaultRhymeScheme:"AABB couplets",topicsPerVerse:"3-4",lyricalCharacter:"Menacing, street-level"},
+  grime:{name:"Grime",defaultLinesPerVerse:8,bpmRange:"140",densityNotes:"Write two 8-line verses, not one 16",defaultRhymeScheme:"AABB couplets",topicsPerVerse:"3-4",lyricalCharacter:"Aggressive, rapid UK delivery"},
+  phonk:{name:"Phonk",defaultLinesPerVerse:4,bpmRange:"60-80",densityNotes:"Drift phonk 130-170: 4-6, often instrumental",defaultRhymeScheme:"AABB couplets",topicsPerVerse:"1-2",lyricalCharacter:"Dark Memphis-rap revival"},
+  nerdcore:{name:"Nerdcore",defaultLinesPerVerse:8,bpmRange:"85-100",densityNotes:"Electro/trap 120-150: 6 lines",defaultRhymeScheme:"AABB couplets",topicsPerVerse:"3-4",lyricalCharacter:"Geek culture, clever wordplay"},
+  pop:{name:"Pop",defaultLinesPerVerse:4,bpmRange:"110-120",densityNotes:"100-110: up to 6. 120-130: stick to 4",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"1-2",lyricalCharacter:"Catchy, universal, polished hooks"},
+  "k-pop":{name:"K-Pop",defaultLinesPerVerse:4,bpmRange:"120-140",densityNotes:"Rapid verse-chorus cycling",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"1-2",lyricalCharacter:"High-energy, genre-blending"},
+  "piano-pop":{name:"Piano Pop",defaultLinesPerVerse:6,bpmRange:"100-120",densityNotes:"Ballad 90-100: up to 8",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"2-3",lyricalCharacter:"Heartfelt, piano-forward intimacy"},
+  "r-and-b":{name:"R&B",defaultLinesPerVerse:6,bpmRange:"60-100",densityNotes:"Ballads <80: 4-6. Leave room for runs",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Smooth, sensual, melodic runs"},
+  funk:{name:"Funk",defaultLinesPerVerse:6,bpmRange:"100-130",densityNotes:"Syllables on the one. Call-and-response",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Groovy, rhythmic, locked to the pocket"},
+  gospel:{name:"Gospel",defaultLinesPerVerse:6,bpmRange:"70-120",densityNotes:"Building intensity through repetition",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Spiritual, uplifting"},
+  afrobeats:{name:"Afrobeats",defaultLinesPerVerse:6,bpmRange:"100-120",densityNotes:"Call-and-response. Repetitive hooks",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Infectious, rhythmic"},
+  country:{name:"Country",defaultLinesPerVerse:6,bpmRange:"90-120",densityNotes:"Ballads 60-80: 4. Uptempo 130+: 6-8",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"2-3",lyricalCharacter:"Storytelling, plainspoken"},
+  folk:{name:"Folk",defaultLinesPerVerse:"6-8",bpmRange:"80-110",densityNotes:"Storytelling handles longer verses",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"3-4",lyricalCharacter:"Narrative, acoustic, poetic"},
+  americana:{name:"Americana",defaultLinesPerVerse:"6-8",bpmRange:"85-120",densityNotes:"Most density-tolerant in country family",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"3-4",lyricalCharacter:"Rootsy, literary"},
+  bluegrass:{name:"Bluegrass",defaultLinesPerVerse:"4-6",bpmRange:"120-160",densityNotes:"Fast picking but sparse lyrics",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"1-2",lyricalCharacter:"Mountain storytelling"},
+  "indie-folk":{name:"Indie Folk",defaultLinesPerVerse:6,bpmRange:"85-120",densityNotes:"Literary lyrics tolerated",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"2-3",lyricalCharacter:"Bookish, pastoral, quietly beautiful"},
+  "singer-songwriter":{name:"Singer-Songwriter",defaultLinesPerVerse:"6-8",bpmRange:"70-105",densityNotes:"Listeners expect dense personal detail",defaultRhymeScheme:"ABAB or ABCB",topicsPerVerse:"3-4",lyricalCharacter:"Deeply personal, confessional"},
+  jazz:{name:"Jazz",defaultLinesPerVerse:"6-8",bpmRange:"variable",densityNotes:"Bebop 120-200: 2-4. Ballads: 6-8",defaultRhymeScheme:"AABA",topicsPerVerse:"2-3",lyricalCharacter:"Sophisticated, swing phrasing"},
+  blues:{name:"Blues",defaultLinesPerVerse:3,bpmRange:"any",densityNotes:"Line 1 stated, line 2 repeats, line 3 resolves",defaultRhymeScheme:"AAB",topicsPerVerse:"1",lyricalCharacter:"Raw, soulful, call-and-response"},
+  classical:{name:"Classical",defaultLinesPerVerse:"4-6",bpmRange:"variable",densityNotes:"Instrument-dominated",defaultRhymeScheme:"ABAB",topicsPerVerse:"1-2",lyricalCharacter:"Formal, composed"},
+  opera:{name:"Opera",defaultLinesPerVerse:"4-6",bpmRange:"variable",densityNotes:"Fewer words, more expression",defaultRhymeScheme:"ABAB",topicsPerVerse:"1-2",lyricalCharacter:"Dramatic, theatrical"},
+  swing:{name:"Swing",defaultLinesPerVerse:"4-6",bpmRange:"120-180",densityNotes:"Conversational, witty phrasing",defaultRhymeScheme:"AABA",topicsPerVerse:"1-2",lyricalCharacter:"Breezy, playful, conversational"},
+  reggae:{name:"Reggae",defaultLinesPerVerse:"4-6",bpmRange:"65-90",densityNotes:"Offbeat skank creates natural spaces",defaultRhymeScheme:"ABAB",topicsPerVerse:"1-2",lyricalCharacter:"Laid-back, conscious"},
+  dancehall:{name:"Dancehall",defaultLinesPerVerse:"6-8",bpmRange:"90-110",densityNotes:"DJ-style rapid delivery",defaultRhymeScheme:"AABB couplets",topicsPerVerse:"2-3",lyricalCharacter:"High-energy, toasting/DJ style"},
+  latin:{name:"Latin",defaultLinesPerVerse:6,bpmRange:"90-140",densityNotes:"Clave/tresillo governs syllable placement",defaultRhymeScheme:"ABAB",topicsPerVerse:"2-3",lyricalCharacter:"Rhythmic, passionate"},
+  "bossa-nova":{name:"Bossa Nova",defaultLinesPerVerse:"4-6",bpmRange:"70-100",densityNotes:"Whispered, intimate",defaultRhymeScheme:"ABAB",topicsPerVerse:"1-2",lyricalCharacter:"Whispered, intimate, gentle sway"},
+  cinematic:{name:"Cinematic",defaultLinesPerVerse:"2-4",bpmRange:"variable",densityNotes:"Words sparse but weighty",defaultRhymeScheme:"Free",topicsPerVerse:"1",lyricalCharacter:"Epic, sweeping"}
+};
+
+// --- GENRE TAGS (500+) ---
+const GENRE_TAGS = {
+  electronic_dance:["Acid Jazz","Ambient","Bass House","Brostep","Chillwave","Club","Cyberpunk","Dance","Dance Pop","Dark Ambient","Dark Electro","Deep House","Deep Techno","Downtempo","Drone","Dub","Dub Techno","Dubstep","EDM","Electro","Electro Swing","Electroacoustic","Electronic","Electropop","Eurodance","French House","Future Bass","Future Garage","Future House","Gabber","Glitch","Glitch Hop","Glitch Pop","Goa Trance","Happy Hardcore","Hardstyle","House","Hyperpop","IDM","Industrial","Jungle","Minimal Techno","Moombahton","Neurofunk","Nu Disco","Post-Disco","Post-Dubstep","Progressive House","Psybient","Psychedelic Trance","Rave","Space Disco","Synthwave","Tech House","Techno","Trance","Trip Hop","Tropical House","UK Funky","UK Garage","Vaporwave","Vocal House","Vocal Trance","Witch House"],
+  hip_hop_rap:["Crunk","Hip Hop","Mumble Rap","Pop Rap","Rap","Trap","UK Drill","West Coast Rap","Jazz Rap","Boom Bap","Lo-fi Hip Hop","Conscious Hip Hop","Gangsta Rap","Southern Hip Hop","East Coast Hip Hop","Underground Hip Hop","Nerdcore"],
+  jazz_blues:["Bebop","Big Band","Blues","Cool Jazz","Dark Jazz","Delta Blues","Gypsy Jazz","Hard Bop","Jazz","Jazz Fusion","Latin Jazz","Modal Jazz","New Orleans Jazz","Nu Jazz","Piano Blues","Piedmont Blues","Post-Bop","Punk Blues","Smooth Jazz","Soul Jazz","Swing"],
+  rock_metal:["Alternative Rock","Arena Rock","Art Rock","Black Metal","Blues Rock","Classic Rock","Death Metal","Doom Metal","Emo","Garage Rock","Glam Rock","Gothic Rock","Grunge","Hair Metal","Hard Rock","Heavy Metal","Indie Rock","Math Rock","Metal","Metalcore","New Wave","Noise Rock","Nu Metal","Post-Hardcore","Post-Punk","Post-Rock","Progressive Metal","Progressive Rock","Psychedelic Rock","Punk","Punk Rock","Shoegaze","Skate Punk","Sludge Metal","Soft Rock","Southern Rock","Stoner Rock","Surf Rock","Thrash Metal"],
+  pop_contemporary:["Adult Contemporary","Avant-garde","Bedroom","Broadway","Disco","Disco Funk","Dream Pop","Europop","Funk","Indie","Indie Pop","J-pop","K-pop","Latin Pop","Lounge","Motown","Neon Pop","Noise Pop","Pop","Pop Punk","Pop Rock","Power Pop","Psychedelic Pop","R&B","Contemporary R&B","Singer-Songwriter","Soul","Synth-pop"],
+  folk_country:["Acoustic","Alt-Country","Americana","Appalachian","Bluegrass","Celtic","Country","Country Rock","Folk","Folk Pop","Folk Rock","Honky Tonk","Irish Folk","Nashville Sound","Neo-Folk","Outlaw Country","Traditional Folk"],
+  world_cultural:["Afrobeat","Arabian","Bossa Nova","Calypso","Celtic","Cumbia","Dancehall","Flamenco","Forro","Highlife","Indian Classical","Klezmer","Latin","Mariachi","Mediterranean","Middle Eastern","Persian","Polka","Reggae","Reggaeton","Salsa","Samba","Soca","Tango","Zouk"],
+  classical_orchestral:["Baroque","Chamber Music","Choral","Classical","Contemporary Classical","Film Score","Impressionist","Minimalist","Neo-Classical","Opera","Orchestral","Romantic","Symphony"],
+  soundtrack_theme:["Audiobook Background","Background","Cinematic","Movie Soundtrack","Score","Spaghetti Western","TV Themes","Video Game Music","Villain Theme"],
+  experimental:["Avant-garde Jazz","Dark Cabaret","Dungeon Synth","Experimental","Harsh Noise","Martial Industrial","Musique Concrète","Noise","No Wave","Power Electronics","Sound Art","Sound Collage","Tape Music"],
+  vocal_choral:["Acapella","Barbershop","Beatboxing","Choir","Christmas Carol","Doo Wop","Gregorian Chant","Throat Singing","Vocal","Vocal Jazz","Vocaloid"]
+};
+const ALL_TAGS = Object.values(GENRE_TAGS).flat();
+
+// --- STRUCTURE TAGS ---
+const STRUCTURE_TAGS = {
+  intro:["[Short Instrumental Intro]","[Intro]","[Intro - Spoken]"],
+  verse:["[Verse]","[Verse 1]","[Verse 2]","[Verse 3]","[Catchy Verse]"],
+  preChorus:["[Pre-Chorus]"],
+  chorus:["[Chorus]","[Catchy Hook]","[Refrain]"],
+  bridge:["[Bridge]","[Break]","[Interlude]"],
+  instrumental:["[Guitar Solo Interlude]","[Percussion Break]","[melodic interlude]","[Dance Break]"],
+  ending:["[Outro]","[End]","[Fade Out]","[Fade to End]","[Big Finish]"],
+  mood:["[Shout]","[Whimsical]","[Melancholy]","[Spoken]","[Whispered]","[Energetic]"]
+};
+const GENRE_TEMPLATES = {
+  pop_rock:["[Short Instrumental Intro]","[Verse 1]","[Chorus]","[Verse 2]","[Chorus]","[Bridge]","[Chorus]","[Outro]","[Fade Out]"],
+  hip_hop:["[Intro - Spoken]","[Verse 1]","[Chorus]","[Verse 2]","[Chorus]","[Verse 3]","[Outro]","[End]"],
+  punk:["[Intro]","[Verse 1]","[Chorus]","[Verse 2]","[Chorus]","[Break]","[Chorus]","[Big Finish]"],
+  k_pop:["[Intro]","[Verse 1]","[Pre-Chorus]","[Chorus]","[Verse 2]","[Pre-Chorus]","[Chorus]","[Bridge]","[Dance Break]","[Chorus]","[Outro]"],
+  edm:["[Short Instrumental Intro]","[Verse 1]","[Pre-Chorus]","[Chorus]","[Break]","[Verse 2]","[Pre-Chorus]","[Chorus]","[Outro]","[Fade Out]"],
+  blues_aab:["[Short Instrumental Intro]","[Verse 1]","[Verse 2]","[Verse 3]","[Guitar Solo Interlude]","[Verse 4]","[Verse 5]","[Outro]","[End]"],
+  folk:["[Short Instrumental Intro]","[Verse 1]","[Chorus]","[Verse 2]","[Chorus]","[Verse 3]","[Chorus]","[Outro]","[Fade Out]"],
+  metal:["[Intro]","[Verse 1]","[Pre-Chorus]","[Chorus]","[Verse 2]","[Pre-Chorus]","[Chorus]","[Bridge]","[Guitar Solo Interlude]","[Chorus]","[Big Finish]"]
+};
+
+// --- VOICE TAGS ---
+const VOCAL_STYLES = ["Staccato","Legato","Vibrato-heavy","Monotone","Melismatic","Syncopated","Operatic","Chanting","Spoken-word","Growling","Belting","Yodeling","Humming","Rapping","Scatting","Falsetto runs","Yelping","Grunting","Call-and-response"];
+const VOCAL_TEXTURES = ["Whispered","Gravelly","Velvety","Dreamy","Resonant","Nasal","Brassy","Metallic","Saturated","Smoky","Chilled","Rough-edged","Shimmery","Glassy","Crunchy","Liquid-like","Breathy exhale"];
+const REGIONAL_STYLES = ["British rock vocal","Southern gospel","Nashville country","New York hip-hop","Jamaican dancehall","Irish folk","Appalachian","West Coast","Detroit soul","Memphis blues","Chicago blues","New Orleans jazz","Latin pop","K-pop idol","Bollywood playback","Nordic folk"];
+
+// --- PRONUNCIATION RISKS ---
+const HIGH_RISK_HOMOGRAPHS = [
+  {word:'live',pronunciationA:'LIV (performance)',pronunciationB:'LYVE (alive)',fixSuggestion:'Use "lyve" or "liv"'},
+  {word:'read',pronunciationA:'REED (present)',pronunciationB:'RED (past)',fixSuggestion:'Use "reed" or rewrite'},
+  {word:'lead',pronunciationA:'LEED (guide)',pronunciationB:'LED (metal)',fixSuggestion:'Use "leed" or rewrite'},
+  {word:'wind',pronunciationA:'WIND (breeze)',pronunciationB:'WYND (coil)',fixSuggestion:'Use "wynd" for coil'},
+  {word:'close',pronunciationA:'KLOHS (near)',pronunciationB:'KLOHZ (shut)',fixSuggestion:'Context-clarify'},
+  {word:'tear',pronunciationA:'TEER (crying)',pronunciationB:'TAIR (rip)',fixSuggestion:'Use "teer" or "tair"'},
+  {word:'bow',pronunciationA:'BOH (ribbon)',pronunciationB:'BOW (bend)',fixSuggestion:'Specify'},
+  {word:'bass',pronunciationA:'BAYSS (instrument)',pronunciationB:'BASS (fish)',fixSuggestion:'Usually BAYSS in music'},
+  {word:'record',pronunciationA:'REK-ord (noun)',pronunciationB:'ri-KORD (verb)',fixSuggestion:'Specify'},
+  {word:'present',pronunciationA:'PREZ-ent (gift)',pronunciationB:'pri-ZENT (give)',fixSuggestion:'Specify'},
+  {word:'content',pronunciationA:'KON-tent (stuff)',pronunciationB:'kon-TENT (satisfied)',fixSuggestion:'Specify'},
+  {word:'wound',pronunciationA:'WOOND (injury)',pronunciationB:'WOWND (coiled)',fixSuggestion:'Specify'},
+  {word:'resume',pronunciationA:'REZ-oo-may (document)',pronunciationB:'ri-ZOOM (continue)',fixSuggestion:'Specify or rewrite'},
+  {word:'object',pronunciationA:'OB-jekt (thing)',pronunciationB:'ob-JEKT (protest)',fixSuggestion:'Specify'},
+  {word:'project',pronunciationA:'PRAH-jekt (noun)',pronunciationB:'pro-JEKT (verb)',fixSuggestion:'Specify'},
+  {word:'desert',pronunciationA:'DEZ-ert (sand)',pronunciationB:'di-ZERT (abandon)',fixSuggestion:'Specify'},
+  {word:'refuse',pronunciationA:'REF-yoos (trash)',pronunciationB:'ri-FYOOZ (decline)',fixSuggestion:'Specify'}
+];
+const MEDIUM_RISK_HOMOGRAPHS = [
+  {word:'alternate',pronunciationA:'AWL-ter-nit (adj)',pronunciationB:'AWL-ter-nayt (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'attribute',pronunciationA:'AT-rih-byoot (noun)',pronunciationB:'uh-TRIB-yoot (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'combine',pronunciationA:'KOM-byn (noun)',pronunciationB:'kum-BYN (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'complex',pronunciationA:'KOM-pleks (noun)',pronunciationB:'kum-PLEKS (adj)',fixSuggestion:'Specify or rewrite'},
+  {word:'conduct',pronunciationA:'KON-dukt (noun)',pronunciationB:'kun-DUKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'conflict',pronunciationA:'KON-flikt (noun)',pronunciationB:'kun-FLIKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'console',pronunciationA:'KON-sohl (noun)',pronunciationB:'kun-SOHL (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'contract',pronunciationA:'KON-trakt (noun)',pronunciationB:'kun-TRAKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'contrast',pronunciationA:'KON-trast (noun)',pronunciationB:'kun-TRAST (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'convert',pronunciationA:'KON-vert (noun)',pronunciationB:'kun-VERT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'convict',pronunciationA:'KON-vikt (noun)',pronunciationB:'kun-VIKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'decrease',pronunciationA:'DEE-krees (noun)',pronunciationB:'di-KREES (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'digest',pronunciationA:'DY-jest (noun)',pronunciationB:'di-JEST (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'discount',pronunciationA:'DIS-kownt (noun)',pronunciationB:'dis-KOWNT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'exploit',pronunciationA:'EKS-ployt (noun)',pronunciationB:'iks-PLOYT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'extract',pronunciationA:'EKS-trakt (noun)',pronunciationB:'iks-TRAKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'impact',pronunciationA:'IM-pakt (noun)',pronunciationB:'im-PAKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'import',pronunciationA:'IM-port (noun)',pronunciationB:'im-PORT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'increase',pronunciationA:'IN-krees (noun)',pronunciationB:'in-KREES (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'insert',pronunciationA:'IN-sert (noun)',pronunciationB:'in-SERT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'insult',pronunciationA:'IN-sult (noun)',pronunciationB:'in-SULT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'moderate',pronunciationA:'MOD-er-it (adj)',pronunciationB:'MOD-er-ayt (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'perfect',pronunciationA:'PER-fikt (adj)',pronunciationB:'per-FEKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'permit',pronunciationA:'PER-mit (noun)',pronunciationB:'per-MIT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'produce',pronunciationA:'PROH-doos (noun)',pronunciationB:'pruh-DOOS (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'progress',pronunciationA:'PRAH-gres (noun)',pronunciationB:'pruh-GRES (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'protest',pronunciationA:'PROH-test (noun)',pronunciationB:'pruh-TEST (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'rebel',pronunciationA:'REB-ul (noun)',pronunciationB:'ri-BEL (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'record',pronunciationA:'REK-ord (noun)',pronunciationB:'ri-KORD (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'reject',pronunciationA:'REE-jekt (noun)',pronunciationB:'ri-JEKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'separate',pronunciationA:'SEP-er-it (adj)',pronunciationB:'SEP-er-ayt (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'subject',pronunciationA:'SUB-jikt (noun)',pronunciationB:'sub-JEKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'suspect',pronunciationA:'SUS-pekt (noun)',pronunciationB:'sus-PEKT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'transfer',pronunciationA:'TRANS-fer (noun)',pronunciationB:'trans-FER (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'transport',pronunciationA:'TRANS-port (noun)',pronunciationB:'trans-PORT (verb)',fixSuggestion:'Specify or rewrite'},
+  {word:'upset',pronunciationA:'UP-set (noun/adj)',pronunciationB:'up-SET (verb)',fixSuggestion:'Specify or rewrite'}
+];
+
+const highRiskMap = new Map(HIGH_RISK_HOMOGRAPHS.map(h=>[h.word.toLowerCase(),h]));
+const mediumRiskMap = new Map(MEDIUM_RISK_HOMOGRAPHS.map(h=>[h.word.toLowerCase(),h]));
+const STANDARD_CONTRACTIONS = new Set(["i'd","he'd","she'd","we'd","they'd","you'd","it'd","who'd","i'll","he'll","she'll","we'll","they'll","you'll","it'll","who'll","wouldn't","couldn't","shouldn't","didn't","doesn't","wasn't","weren't","isn't","aren't","can't","won't","haven't","hasn't","hadn't","i'm","i've","you've","we've","they've","who've","let's","that's","what's","there's","here's","where's","how's"]);
+
+function scanLyrics(text) {
+  const results = [];
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const tokens = lines[i].split(/\s+/).filter(t => t.length > 0);
+    for (const token of tokens) {
+      if (/^\[.*\]$/.test(token)) continue;
+      const cleaned = token.replace(/^[^a-zA-Z0-9']+/,'').replace(/[^a-zA-Z0-9']+$/,'');
+      if (!cleaned) continue;
+      const lower = cleaned.toLowerCase();
+      const high = highRiskMap.get(lower);
+      if (high) results.push({word:cleaned,line:i+1,riskLevel:'high',issue:`Homograph: "${high.word}" could be ${high.pronunciationA} or ${high.pronunciationB}`,suggestion:high.fixSuggestion});
+      const med = mediumRiskMap.get(lower);
+      if (med) results.push({word:cleaned,line:i+1,riskLevel:'medium',issue:`Homograph: "${med.word}" could be ${med.pronunciationA} or ${med.pronunciationB}`,suggestion:med.fixSuggestion});
+      if (/^[A-Z]{2,}$/.test(cleaned)) results.push({word:cleaned,line:i+1,riskLevel:'medium',issue:`Un-periodized acronym "${cleaned}"`,suggestion:`Use "${cleaned.split('').join('.')}."`});
+      if (/\d/.test(cleaned) && !/^'\d{2}$/.test(cleaned)) results.push({word:cleaned,line:i+1,riskLevel:'low',issue:`Digit number "${cleaned}"`,suggestion:'Spell out the number'});
+      for (const sfx of ["'d","'ll","'ve","'m","'re","'s"]) {
+        if (lower.endsWith(sfx) && lower.length > sfx.length && !STANDARD_CONTRACTIONS.has(lower)) {
+          results.push({word:cleaned,line:i+1,riskLevel:'low',issue:`Non-standard contraction "${cleaned}"`,suggestion:'Expand to full words'});
+          break;
+        }
+      }
+    }
+  }
+  return results;
+}
+
+// --- MOOD / ENERGY CHIPS ---
+const MOODS = ["Melancholic","Euphoric","Aggressive","Dreamy","Anthemic","Dark","Uplifting","Chill","Intense","Nostalgic","Playful","Brooding","Ethereal","Raw","Groovy","Haunting","Triumphant","Intimate"];
+
+// --- KEYS ---
+const KEYS = ["C","C#/Db","D","D#/Eb","E","F","F#/Gb","G","G#/Ab","A","A#/Bb","B",
+  "C minor","C# minor","D minor","D# minor","E minor","F minor","F# minor","G minor","G# minor","A minor","A# minor","B minor"];
+
+
+// ═══════════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════════
+const state = {
+  genre: '',
+  bpm: null,
+  key: '',
+  moods: [],
+  instruments: [],
+  vocalGender: '',
+  vocalTexture: '',
+  vocalStyle: '',
+  vocalRegional: '',
+  productionNotes: ''
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initGenreSelect();
+  initKeySelect();
+  initMoodChips();
+  initVocalSelects();
+  initTemplateBar();
+  initInstrumentSearch();
+  initEventListeners();
+});
+
+function initGenreSelect() {
+  const sel = document.getElementById('genre-select');
+  sel.innerHTML = '<option value="">Select genre...</option>';
+  const sorted = Object.entries(genreDatabase).sort((a,b) => a[1].name.localeCompare(b[1].name));
+  for (const [key, g] of sorted) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = `${g.name} (${g.bpmRange} BPM)`;
+    sel.appendChild(opt);
+  }
+}
+
+function initKeySelect() {
+  const sel = document.getElementById('key-select');
+  for (const k of KEYS) {
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = k;
+    sel.appendChild(opt);
+  }
+}
+
+function initMoodChips() {
+  const container = document.getElementById('mood-chips');
+  for (const mood of MOODS) {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = mood;
+    chip.onclick = () => {
+      chip.classList.toggle('active');
+      if (chip.classList.contains('active')) {
+        state.moods.push(mood.toLowerCase());
+      } else {
+        state.moods = state.moods.filter(m => m !== mood.toLowerCase());
+      }
+      updatePreview();
+    };
+    container.appendChild(chip);
+  }
+}
+
+function initVocalSelects() {
+  const textureSel = document.getElementById('vocal-texture');
+  for (const t of VOCAL_TEXTURES) {
+    const opt = document.createElement('option');
+    opt.value = t.toLowerCase();
+    opt.textContent = t;
+    textureSel.appendChild(opt);
+  }
+  const styleSel = document.getElementById('vocal-style');
+  for (const s of VOCAL_STYLES) {
+    const opt = document.createElement('option');
+    opt.value = s.toLowerCase();
+    opt.textContent = s;
+    styleSel.appendChild(opt);
+  }
+  const regionalSel = document.getElementById('vocal-regional');
+  for (const r of REGIONAL_STYLES) {
+    const opt = document.createElement('option');
+    opt.value = r;
+    opt.textContent = r;
+    regionalSel.appendChild(opt);
+  }
+}
+
+function initTemplateBar() {
+  const bar = document.getElementById('template-bar');
+  const templates = {
+    'Pop/Rock': 'pop_rock',
+    'Hip-Hop': 'hip_hop',
+    'Punk': 'punk',
+    'K-Pop': 'k_pop',
+    'EDM': 'edm',
+    'Blues (AAB)': 'blues_aab',
+    'Folk': 'folk',
+    'Metal': 'metal'
+  };
+  for (const [label, key] of Object.entries(templates)) {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm';
+    btn.textContent = label;
+    btn.onclick = () => {
+      const textarea = document.getElementById('lyrics-input');
+      const template = GENRE_TEMPLATES[key].join('\n\n\n');
+      if (textarea.value && !confirm('Replace current lyrics with template?')) return;
+      textarea.value = template;
+      onLyricsChange();
+    };
+    bar.appendChild(btn);
+  }
+}
+
+function initInstrumentSearch() {
+  const input = document.getElementById('instrument-search');
+  const results = document.getElementById('instrument-results');
+
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase().trim();
+    if (q.length < 2) { results.classList.remove('visible'); return; }
+    const matches = ALL_TAGS.filter(t => t.toLowerCase().includes(q)).slice(0, 20);
+    if (matches.length === 0) { results.classList.remove('visible'); return; }
+    results.innerHTML = '';
+    for (const tag of matches) {
+      if (state.instruments.includes(tag)) continue;
+      const item = document.createElement('div');
+      item.className = 'tag-result-item';
+      item.textContent = tag;
+      item.onclick = () => {
+        state.instruments.push(tag);
+        renderSelectedInstruments();
+        input.value = '';
+        results.classList.remove('visible');
+        updatePreview();
+      };
+      results.appendChild(item);
+    }
+    results.classList.add('visible');
+  });
+
+  input.addEventListener('blur', () => {
+    setTimeout(() => results.classList.remove('visible'), 200);
+  });
+}
+
+function renderSelectedInstruments() {
+  const container = document.getElementById('selected-instruments');
+  container.innerHTML = '';
+  for (const tag of state.instruments) {
+    const el = document.createElement('div');
+    el.className = 'selected-tag';
+    el.innerHTML = `${tag} <span class="remove">x</span>`;
+    el.onclick = () => {
+      state.instruments = state.instruments.filter(t => t !== tag);
+      renderSelectedInstruments();
+      updatePreview();
+    };
+    container.appendChild(el);
+  }
+}
+
+function initEventListeners() {
+  const genreSearch = document.getElementById('genre-search');
+  const genreSelect = document.getElementById('genre-select');
+
+  genreSearch.addEventListener('input', () => {
+    const q = genreSearch.value.toLowerCase();
+    const opts = genreSelect.options;
+    for (let i = 1; i < opts.length; i++) {
+      opts[i].style.display = opts[i].textContent.toLowerCase().includes(q) ? '' : 'none';
+    }
+  });
+
+  genreSelect.addEventListener('change', () => {
+    state.genre = genreSelect.value;
+    updateGenreInfo();
+    updatePreview();
+    onLyricsChange();
+  });
+
+  document.getElementById('bpm-input').addEventListener('input', (e) => {
+    state.bpm = e.target.value ? parseInt(e.target.value) : null;
+    updateGenreInfo();
+    updatePreview();
+    onLyricsChange();
+  });
+
+  document.getElementById('key-select').addEventListener('change', (e) => {
+    state.key = e.target.value;
+    updatePreview();
+  });
+
+  document.getElementById('vocal-gender').addEventListener('change', (e) => {
+    state.vocalGender = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('vocal-texture').addEventListener('change', (e) => {
+    state.vocalTexture = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('vocal-style').addEventListener('change', (e) => {
+    state.vocalStyle = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('vocal-regional').addEventListener('change', (e) => {
+    state.vocalRegional = e.target.value;
+    updatePreview();
+  });
+  document.getElementById('production-notes').addEventListener('input', (e) => {
+    state.productionNotes = e.target.value;
+    updatePreview();
+  });
+
+  document.getElementById('lyrics-input').addEventListener('input', onLyricsChange);
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// STYLE PROMPT PREVIEW
+// ═══════════════════════════════════════════════════════════════
+function buildStylePrompt() {
+  const parts = [];
+
+  // Genre
+  if (state.genre && genreDatabase[state.genre]) {
+    parts.push(genreDatabase[state.genre].name);
+  }
+
+  // BPM + Key
+  const tempoKey = [];
+  if (state.bpm) tempoKey.push(`${state.bpm} BPM`);
+  if (state.key) tempoKey.push(state.key);
+  if (tempoKey.length) parts.push(tempoKey.join(', '));
+
+  // Moods
+  if (state.moods.length) parts.push(state.moods.join(', '));
+
+  // Instruments
+  if (state.instruments.length) parts.push(state.instruments.join(', '));
+
+  // Vocal description
+  const vocalParts = [];
+  if (state.vocalGender) vocalParts.push(state.vocalGender);
+  if (state.vocalTexture) vocalParts.push(state.vocalTexture);
+  if (state.vocalStyle) vocalParts.push(state.vocalStyle);
+  if (state.vocalRegional) vocalParts.push(state.vocalRegional + ' vocal');
+  if (vocalParts.length) parts.push(vocalParts.join(', '));
+
+  // Production notes
+  if (state.productionNotes.trim()) parts.push(state.productionNotes.trim());
+
+  return parts.join('; ');
+}
+
+function countDescriptors() {
+  let count = 0;
+  if (state.genre) count++;
+  if (state.bpm) count++;
+  if (state.key) count++;
+  count += state.moods.length;
+  count += state.instruments.length;
+  if (state.vocalGender || state.vocalTexture || state.vocalStyle || state.vocalRegional) count++;
+  if (state.productionNotes.trim()) count++;
+  return count;
+}
+
+function updatePreview() {
+  const prompt = buildStylePrompt();
+  const preview = document.getElementById('style-preview');
+  const charCounter = document.getElementById('char-counter');
+  const badge = document.getElementById('descriptor-badge');
+
+  preview.textContent = prompt || 'Select a genre to begin...';
+
+  // Character counter
+  const len = prompt.length;
+  charCounter.textContent = `${len} / 1000 characters`;
+  charCounter.className = 'counter ' + (len > 1000 ? 'red' : len > 800 ? 'yellow' : '');
+
+  // Descriptor badge
+  const desc = countDescriptors();
+  let badgeClass, badgeText;
+  if (desc >= 4 && desc <= 7) { badgeClass = 'green'; badgeText = `${desc} descriptors`; }
+  else if (desc === 3 || desc === 8) { badgeClass = 'yellow'; badgeText = `${desc} descriptors`; }
+  else { badgeClass = 'red'; badgeText = `${desc} descriptors (aim for 4-7)`; }
+  badge.className = 'descriptor-badge ' + badgeClass;
+  badge.textContent = badgeText;
+
+  // Update final output
+  document.getElementById('final-style-output').textContent = prompt;
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// GENRE INFO DISPLAY
+// ═══════════════════════════════════════════════════════════════
+function updateGenreInfo() {
+  const infoEl = document.getElementById('genre-info');
+  if (!state.genre || !genreDatabase[state.genre]) {
+    infoEl.style.display = 'none';
+    return;
+  }
+  const g = genreDatabase[state.genre];
+  let html = `<strong>${g.name}</strong> | ${g.bpmRange} BPM | ${g.defaultLinesPerVerse} lines/verse | ${g.defaultRhymeScheme} | ${g.topicsPerVerse} topics/verse`;
+
+  if (state.bpm) {
+    const adjusted = getGenreByBPM(state.genre, state.bpm);
+    html += `<br><strong>At ${state.bpm} BPM:</strong> ${adjusted.linesPerVerse} lines/verse — ${adjusted.notes}`;
+  }
+
+  html += `<br><em style="color:var(--text-muted)">${g.lyricalCharacter}</em>`;
+  infoEl.innerHTML = html;
+  infoEl.style.display = 'block';
+}
+
+function getGenreByBPM(genre, bpm) {
+  const entry = genreDatabase[genre];
+  if (!entry) return { linesPerVerse: 4, notes: 'Unknown genre' };
+
+  let defaultLines = typeof entry.defaultLinesPerVerse === 'number' ? entry.defaultLinesPerVerse : parseInt(String(entry.defaultLinesPerVerse));
+  if (isNaN(defaultLines)) {
+    const m = String(entry.defaultLinesPerVerse).match(/(\d+)-(\d+)/);
+    defaultLines = m ? Math.round((parseInt(m[1])+parseInt(m[2]))/2) : 4;
+  }
+  let adjusted = defaultLines;
+  let matchedRule = null;
+  const notes = entry.densityNotes;
+
+  // Parse BPM rules from density notes
+  // Below threshold: "<N:"
+  const below = [...notes.matchAll(/<\s*(\d+)\s*:\s*(.*?)(?:\.|$)/g)];
+  for (const m of below) {
+    if (bpm < parseInt(m[1])) {
+      const lm = m[2].match(/(?:up to |max\s?)(\d+)/i);
+      if (lm) { adjusted = parseInt(lm[1]); matchedRule = m[2].trim(); }
+    }
+  }
+  // Above threshold: "N+:"
+  const above = [...notes.matchAll(/(\d+)\+\s*:\s*(.*?)(?:\.|$)/g)];
+  for (const m of above) {
+    if (bpm >= parseInt(m[1])) {
+      const lm = m[2].match(/(\d+)/);
+      if (lm) { adjusted = parseInt(lm[1]); matchedRule = m[2].trim(); }
+    }
+  }
+  // Range: "N-M:" (BPM ranges, not line ranges)
+  const ranges = [...notes.matchAll(/(\d+)-(\d+)\s*:\s*(.*?)(?:\.|$)/g)];
+  for (const m of ranges) {
+    const lo = parseInt(m[1]), hi = parseInt(m[2]);
+    if (hi - lo <= 10 && lo < 20) continue;
+    if (bpm >= lo && bpm <= hi) {
+      const lm = m[3].match(/(\d+)/);
+      if (lm) { adjusted = parseInt(lm[1]); matchedRule = m[3].trim(); }
+    }
+  }
+  // Ballad rules
+  const ballad = notes.match(/[Bb]allads?\s*[<]?\s*(\d+)(?:-(\d+))?\s*:\s*(.*?)(?:\.|$)/);
+  if (ballad) {
+    const threshold = parseInt(ballad[1]);
+    if (bpm < threshold || (ballad[2] && bpm >= threshold && bpm <= parseInt(ballad[2]))) {
+      const lm = ballad[3].match(/(\d+)/);
+      if (lm) { adjusted = parseInt(lm[1]); matchedRule = 'Ballad: ' + ballad[3].trim(); }
+    }
+  }
+  // Effective BPM (half-time)
+  const eff = notes.match(/(\d+)-(\d+)\s*effective\s*:\s*(.*?)(?:\.|$)/);
+  if (eff && bpm >= parseInt(eff[1]) && bpm <= parseInt(eff[2])) {
+    const lm = eff[3].match(/(\d+)/);
+    if (lm) { adjusted = parseInt(lm[1]); matchedRule = 'Effective: ' + eff[3].trim(); }
+  }
+
+  return { linesPerVerse: adjusted, notes: matchedRule || notes };
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// LYRICS EDITOR
+// ═══════════════════════════════════════════════════════════════
+let scanTimeout;
+function onLyricsChange() {
+  const text = document.getElementById('lyrics-input').value;
+
+  // Word count
+  const words = text.split(/\s+/).filter(w => w.length > 0 && !/^\[.*\]$/.test(w));
+  const wordCount = words.length;
+  document.getElementById('word-counter').textContent = `${wordCount} words`;
+
+  // Word limit indicator
+  const limitEl = document.getElementById('lyrics-word-limit');
+  const isHipHop = ['hip-hop','trap','drill','grime','nerdcore','phonk'].includes(state.genre);
+  const maxWords = isHipHop ? 600 : 400;
+  if (wordCount > maxWords) {
+    limitEl.textContent = `Over ${maxWords} word limit!`;
+    limitEl.className = 'counter red';
+  } else if (wordCount < 200 && wordCount > 0) {
+    limitEl.textContent = `Under 200 words (thin)`;
+    limitEl.className = 'counter yellow';
+  } else {
+    limitEl.textContent = `(max ${maxWords})`;
+    limitEl.className = 'counter';
+  }
+
+  // Debounce pronunciation scan
+  clearTimeout(scanTimeout);
+  scanTimeout = setTimeout(() => {
+    const risks = scanLyrics(text);
+    renderRisks(risks);
+    renderSectionCounts(text);
+    updateFinalLyrics(text);
+  }, 300);
+}
+
+function renderRisks(risks) {
+  const list = document.getElementById('risk-list');
+  if (risks.length === 0) {
+    list.innerHTML = '<div style="color:var(--green); font-size:11px;">No pronunciation risks found.</div>';
+    return;
+  }
+  list.innerHTML = risks.map(r => `
+    <div class="risk-item">
+      <div class="risk-dot ${r.riskLevel}"></div>
+      <div>
+        <strong>${r.word}</strong> (line ${r.line})<br>
+        <span style="color:var(--text-muted)">${r.issue}</span><br>
+        <span style="color:var(--copper-light)">${r.suggestion}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSectionCounts(text) {
+  const container = document.getElementById('section-counts');
+  const lines = text.split('\n');
+  const sections = [];
+  let currentSection = null;
+  let lineCount = 0;
+
+  for (const line of lines) {
+    const tagMatch = line.trim().match(/^\[(.+)\]$/);
+    if (tagMatch) {
+      if (currentSection) {
+        sections.push({ name: currentSection, lines: lineCount });
+      }
+      currentSection = tagMatch[0];
+      lineCount = 0;
+    } else if (line.trim().length > 0 && currentSection) {
+      lineCount++;
+    }
+  }
+  if (currentSection) sections.push({ name: currentSection, lines: lineCount });
+
+  if (sections.length === 0) {
+    container.innerHTML = '<span style="color:var(--text-muted); font-size:11px;">No sections detected</span>';
+    return;
+  }
+
+  // Get genre limits
+  let maxLines = 6;
+  if (state.genre && genreDatabase[state.genre]) {
+    const g = genreDatabase[state.genre];
+    const val = g.defaultLinesPerVerse;
+    if (typeof val === 'number') maxLines = val;
+    else {
+      const m = String(val).match(/(\d+)(?:-(\d+))?/);
+      maxLines = m && m[2] ? parseInt(m[2]) : (m ? parseInt(m[1]) : 6);
+    }
+    if (state.bpm) {
+      const adj = getGenreByBPM(state.genre, state.bpm);
+      maxLines = adj.linesPerVerse + 2; // allow some flexibility
+    }
+  }
+
+  container.innerHTML = sections.map(s => {
+    const isVerse = /verse/i.test(s.name);
+    const ok = !isVerse || s.lines <= maxLines;
+    return `<span class="section-counter ${ok ? 'ok' : 'warn'}">${s.name} ${s.lines}L</span>`;
+  }).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// QUALITY CHECK
+// ═══════════════════════════════════════════════════════════════
+async function runQualityCheck() {
+  const lyrics = document.getElementById('lyrics-input').value;
+  const genre = state.genre;
+  const bpm = state.bpm;
+  const stylePrompt = buildStylePrompt();
+
+  if (!lyrics.trim()) { alert('Please enter lyrics first.'); return; }
+  if (!genre) { alert('Please select a genre first.'); return; }
+
+  const btn = document.getElementById('run-quality-check');
+  const results = document.getElementById('qc-results');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analyzing...';
+  results.innerHTML = '';
+
+  try {
+    const resp = await fetch('/api/quality-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lyrics, genre, bpm, stylePrompt })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    renderQualityResults(data.results);
+  } catch (err) {
+    results.innerHTML = `<div style="color:var(--red);">Error: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Quality Check';
+  }
+}
+
+function renderQualityResults(items) {
+  const container = document.getElementById('qc-results');
+  if (!items || !items.length) {
+    container.innerHTML = '<div style="color:var(--text-muted);">No results returned.</div>';
+    return;
+  }
+
+  container.innerHTML = items.map(item => `
+    <div class="qc-card ${item.status}">
+      <span class="qc-status ${item.status}">${item.status.toUpperCase()}</span>
+      <div class="qc-name">${item.id}. ${item.name}</div>
+      <div class="qc-details">${item.details}</div>
+      ${item.fix ? `<div class="qc-fix">Fix: ${item.fix}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// FINAL OUTPUT
+// ═══════════════════════════════════════════════════════════════
+function updateFinalLyrics(text) {
+  document.getElementById('final-lyrics-output').textContent = text || 'Enter lyrics above...';
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// CLIPBOARD
+// ═══════════════════════════════════════════════════════════════
+function copyToClipboard(elementId, btn) {
+  const text = document.getElementById(elementId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = orig;
+    }, 1500);
+  });
+}
+</script>
+</body>
+</html>
