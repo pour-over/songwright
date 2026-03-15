@@ -3,135 +3,183 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Songwright — Suno V5 Prompt Engine</title>
+<title>Songwright — AI Lyric Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════
-   SONGWRIGHT — DARK THEME / COPPER ACCENT
+   SONGWRIGHT — TEENAGE ENGINEERING DARK THEME
    ═══════════════════════════════════════════ */
 :root {
-  --bg-primary: #0d0d0d;
-  --bg-secondary: #161616;
-  --bg-tertiary: #1e1e1e;
-  --bg-card: #1a1a1a;
+  --bg: #0a0a0a;
+  --bg-card: #141414;
+  --bg-input: #1a1a1a;
   --border: #2a2a2a;
-  --border-focus: #b87333;
-  --copper: #b87333;
-  --copper-light: #d4956b;
-  --copper-dark: #8b5a2b;
-  --amber: #d4a24e;
-  --text-primary: #e8e0d6;
-  --text-secondary: #a09888;
-  --text-muted: #6b6358;
-  --green: #4a9;
-  --yellow: #d4a24e;
-  --red: #c44;
-  --font-mono: 'DM Mono', monospace;
-  --font-serif: 'Cormorant Garamond', serif;
+  --border-focus: #ff6600;
+  --text: #e8e8e8;
+  --text-secondary: #999999;
+  --text-muted: #666666;
+  --accent: #ff6600;
+  --accent-hover: #ff8533;
+  --accent-light: rgba(255,102,0,0.08);
+  --green: #00cc66;
+  --yellow: #ffaa00;
+  --red: #ff3333;
+  --font-body: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 300;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
 }
 
 /* Header */
 .header {
-  border-bottom: 1px solid var(--border);
-  padding: 20px 24px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 24px 16px;
   display: flex;
   align-items: baseline;
-  gap: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
 }
 .header h1 {
-  font-family: var(--font-serif);
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--copper-light);
-  letter-spacing: 2px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
 .header .subtitle {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  letter-spacing: 3px;
 }
 
-/* Layout */
-.app {
-  max-width: 1400px;
+/* Tab bar */
+.tab-bar {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  gap: 0;
+}
+.tab {
+  padding: 10px 24px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Container */
+.container {
+  max-width: 720px;
   margin: 0 auto;
   padding: 24px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-@media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; }
 }
 
-/* Panels */
+/* Tab panels */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Panels / Cards */
 .panel {
   background: var(--bg-card);
-  border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 20px;
+  padding: 28px;
+  border: 1px solid var(--border);
 }
 .panel-title {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--copper-light);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
-  letter-spacing: 1px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
 }
 
 /* Form elements */
 label {
   display: block;
+  font-family: var(--font-mono);
   font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  font-weight: 700;
   color: var(--text-muted);
   margin-bottom: 4px;
-  margin-top: 12px;
+  margin-top: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
-label:first-child { margin-top: 0; }
+label:first-child, span.label:first-child { margin-top: 0; }
+span.label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  margin-top: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
 
 select, input[type="number"], input[type="text"] {
   width: 100%;
-  padding: 8px 10px;
-  background: var(--bg-secondary);
+  padding: 10px 12px;
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 3px;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 13px;
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
 }
 select:focus, input:focus, textarea:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 textarea {
   width: 100%;
-  padding: 10px;
-  background: var(--bg-secondary);
+  padding: 12px;
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 3px;
-  color: var(--text-primary);
+  border-radius: 6px;
+  color: var(--text);
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.6;
@@ -148,57 +196,66 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 .chip {
-  padding: 4px 10px;
-  background: var(--bg-secondary);
+  padding: 5px 12px;
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  font-size: 11px;
+  border-radius: 3px;
+  font-size: 10px;
   cursor: pointer;
   transition: all 0.15s;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   user-select: none;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.chip:hover { border-color: var(--copper); color: var(--text-primary); }
+.chip:hover { border-color: var(--accent); color: var(--text); }
 .chip.active {
-  background: var(--copper-dark);
-  border-color: var(--copper);
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 700;
 }
 
 /* Buttons */
 .btn {
   padding: 8px 16px;
-  background: var(--bg-tertiary);
+  background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 3px;
-  color: var(--text-primary);
+  color: var(--text);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.btn:hover { border-color: var(--copper); background: var(--bg-secondary); }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
 .btn-primary {
-  background: var(--copper-dark);
-  border-color: var(--copper);
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 700;
 }
-.btn-primary:hover { background: var(--copper); }
-.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-sm { padding: 5px 12px; font-size: 10px; }
 .btn-copy { position: relative; }
 .btn-copy.copied { border-color: var(--green); color: var(--green); }
 
 /* Preview box */
 .preview-box {
-  background: var(--bg-primary);
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 12px;
+  border-radius: 6px;
+  padding: 14px;
   margin-top: 12px;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   line-height: 1.5;
   min-height: 60px;
   white-space: pre-wrap;
@@ -208,7 +265,7 @@ textarea {
 
 /* Counters / indicators */
 .counter {
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 4px;
   color: var(--text-muted);
 }
@@ -221,23 +278,21 @@ textarea {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   margin-left: 8px;
 }
-.descriptor-badge.green { background: rgba(68,170,153,0.15); color: var(--green); }
-.descriptor-badge.yellow { background: rgba(212,162,78,0.15); color: var(--yellow); }
-.descriptor-badge.red { background: rgba(204,68,68,0.15); color: var(--red); }
+.descriptor-badge.green { background: rgba(22,163,74,0.1); color: var(--green); }
+.descriptor-badge.yellow { background: rgba(202,138,4,0.1); color: var(--yellow); }
+.descriptor-badge.red { background: rgba(220,38,38,0.1); color: var(--red); }
 
 /* Pronunciation highlights */
-.lyrics-display {
-  position: relative;
-}
+.lyrics-display { position: relative; }
 .lyrics-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   pointer-events: none;
-  padding: 10px;
+  padding: 12px;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.6;
@@ -250,19 +305,20 @@ textarea {
 .risk-popup {
   position: fixed;
   background: var(--bg-card);
-  border: 1px solid var(--copper);
-  border-radius: 4px;
-  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px;
   max-width: 320px;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  font-size: 12px;
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
   display: none;
 }
 .risk-popup .risk-level {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
+  font-weight: 600;
   margin-bottom: 6px;
 }
 .risk-popup .risk-level.high { color: var(--red); }
@@ -271,9 +327,9 @@ textarea {
 
 /* Section counter */
 .section-counter {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 3px;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 4px;
   margin: 2px 0;
 }
 .section-counter.ok { color: var(--green); }
@@ -281,48 +337,50 @@ textarea {
 
 /* Quality check results */
 .qc-card {
-  padding: 10px;
+  padding: 14px;
   margin-bottom: 8px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 6px;
   border-left: 3px solid var(--border);
 }
 .qc-card.pass { border-left-color: var(--green); }
 .qc-card.warn { border-left-color: var(--yellow); }
 .qc-card.fail { border-left-color: var(--red); }
 .qc-card .qc-name {
-  font-weight: 500;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: 13px;
   margin-bottom: 4px;
 }
 .qc-card .qc-status {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
+  font-weight: 600;
   float: right;
 }
 .qc-card .qc-status.pass { color: var(--green); }
 .qc-card .qc-status.warn { color: var(--yellow); }
 .qc-card .qc-status.fail { color: var(--red); }
 .qc-card .qc-details {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-secondary);
   margin-top: 4px;
 }
 .qc-card .qc-fix {
-  font-size: 11px;
-  color: var(--copper-light);
+  font-size: 13px;
+  color: var(--accent);
   margin-top: 4px;
 }
 
 /* Output boxes */
 .output-box {
-  background: var(--bg-primary);
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 12px;
+  border-radius: 6px;
+  padding: 14px;
   margin-top: 8px;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   line-height: 1.5;
   min-height: 80px;
   white-space: pre-wrap;
@@ -342,57 +400,62 @@ textarea {
 /* Search input for tags */
 .search-input {
   width: 100%;
-  padding: 6px 10px;
-  background: var(--bg-secondary);
+  padding: 8px 12px;
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 3px;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 12px;
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
   outline: none;
   margin-bottom: 6px;
 }
-.search-input:focus { border-color: var(--border-focus); }
+.search-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
 /* Tag search results */
 .tag-results {
   max-height: 150px;
   overflow-y: auto;
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 6px;
   display: none;
+  box-shadow: var(--shadow);
 }
 .tag-results.visible { display: block; }
 .tag-result-item {
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: 6px 12px;
+  font-size: 13px;
   cursor: pointer;
   color: var(--text-secondary);
 }
 .tag-result-item:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: var(--accent-light);
+  color: var(--text);
 }
 
 /* Selected tags */
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
+  gap: 6px;
+  margin-top: 8px;
 }
 .selected-tag {
   padding: 3px 8px;
-  background: var(--copper-dark);
-  border: 1px solid var(--copper);
-  border-radius: 10px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
   font-size: 10px;
-  color: #fff;
+  color: #000;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .selected-tag .remove { opacity: 0.6; }
 .selected-tag:hover .remove { opacity: 1; }
@@ -403,7 +466,7 @@ textarea {
   width: 16px;
   height: 16px;
   border: 2px solid var(--border);
-  border-top-color: var(--copper);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   vertical-align: middle;
@@ -413,12 +476,12 @@ textarea {
 
 /* Genre info display */
 .genre-info {
-  background: var(--bg-primary);
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 8px 10px;
+  border-radius: 6px;
+  padding: 10px 12px;
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-muted);
   line-height: 1.5;
 }
@@ -434,22 +497,22 @@ textarea {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 11px;
+  font-size: 13px;
 }
 .risk-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-top: 4px;
+  margin-top: 5px;
   flex-shrink: 0;
 }
 .risk-dot.high { background: var(--red); }
 .risk-dot.medium { background: var(--yellow); }
 .risk-dot.low { background: var(--text-muted); }
 
-/* Section counters sidebar */
+/* Section counters */
 .section-counts {
   margin-top: 8px;
   display: flex;
@@ -460,72 +523,564 @@ textarea {
 /* Suno link */
 .suno-link {
   display: inline-block;
-  margin-top: 12px;
+  margin-top: 16px;
   padding: 8px 16px;
-  background: var(--copper-dark);
-  border: 1px solid var(--copper);
+  background: none;
+  border: 1px solid var(--border);
   border-radius: 3px;
-  color: #fff;
+  color: var(--text-muted);
   text-decoration: none;
   font-family: var(--font-mono);
-  font-size: 12px;
-  transition: background 0.15s;
+  font-size: 10px;
+  font-weight: 500;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.suno-link:hover { background: var(--copper); }
+.suno-link:hover { border-color: var(--accent); color: var(--accent); }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Generate & Play */
+.credits-badge {
+  float: right;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.generate-status {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.progress-bar-track {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+.progress-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.audio-player-container {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+audio {
+  width: 100%;
+  height: 40px;
+}
+.generate-result-row {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.generate-result-row a { text-decoration: none; }
+.btn-generate {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #000;
+  padding: 14px 32px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.btn-generate:hover { background: var(--accent-hover); }
+.btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-generate .spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.generate-error {
+  color: var(--red);
+  font-size: 13px;
+  margin-top: 12px;
+}
+.song-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+.song-card-art {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.song-card-info { flex: 1; min-width: 0; }
+.song-card-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.song-card-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 1px dashed var(--border);
+  border-radius: 3px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--bg-input);
+  position: relative;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.drop-zone.has-file {
+  border-style: solid;
+  border-color: var(--accent);
+}
+.drop-zone-icon {
+  font-size: 28px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.drop-zone-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.drop-zone-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.uploaded-file-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.upload-status {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.upload-status.uploading { color: var(--yellow); }
+.upload-status.ready { color: var(--green); }
+.upload-status.error { color: var(--red); }
+.btn-remove-file {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-remove-file:hover { color: var(--red); border-color: var(--red); }
+.secret-toggle {
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.secret-toggle:hover { color: var(--text-secondary); }
+
+/* Tip box */
+.tip-box {
+  background: var(--accent-light);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 3px 3px 0;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.tip-box strong { color: var(--accent); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Header actions */
+.header-actions { display: flex; align-items: center; gap: 6px; }
+.btn-randomize, .btn-example {
+  font-size: 9px; padding: 4px 10px; border-radius: 3px;
+  border: 1px solid var(--border); background: var(--bg-input);
+  cursor: pointer; font-family: var(--font-mono); color: var(--text-muted);
+  transition: all 0.15s; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.btn-randomize:hover, .btn-example:hover {
+  border-color: var(--accent); color: var(--accent);
+}
+
+/* Expert mode toggle */
+.expert-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.expert-toggle input { display: none; }
+.expert-slider {
+  width: 34px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.expert-slider::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+.expert-toggle input:checked + .expert-slider { background: var(--accent); }
+.expert-toggle input:checked + .expert-slider::after { transform: translateX(14px); }
+.expert-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Expert-only content */
+.expert-only { display: none !important; }
+body.expert-mode .expert-only { display: block !important; }
+body.expert-mode .expert-only-grid { display: grid !important; }
+
+/* Tagline */
+.tagline {
+  display: block;
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 400;
+  font-style: normal;
+  font-family: var(--font-mono);
+  max-width: 720px;
+  padding: 0 24px 8px;
+  margin: -8px auto 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Panel navigation */
+.panel-nav {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+.btn-nav {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.btn-nav:hover { color: var(--accent-hover); }
+
+/* Tab fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Copy feedback enhancement */
+.btn-copy.copied {
+  background: var(--green) !important;
+  color: #000 !important;
+  border-color: var(--green) !important;
+}
+
+/* Drop zone micro-interaction */
+.drop-zone { transition: border-color 0.2s, background 0.2s, transform 0.15s; }
+.drop-zone:hover { transform: scale(1.005); }
+.drop-zone.drag-over { transform: scale(1.01); }
+
+/* Easter egg flash */
+.easter-flash {
+  display: inline-block;
+  animation: flashIn 1.5s ease forwards;
+  margin-left: 6px;
+}
+@keyframes flashIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  20% { opacity: 1; transform: scale(1.2); }
+  40% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header { padding: 16px; flex-direction: column; gap: 4px; }
+  .tab-bar { padding: 0 16px; }
+  .container { padding: 16px; }
+  .panel { padding: 20px; }
+  .tab { padding: 8px 14px; font-size: 13px; }
+  .tagline { padding: 0 16px 8px; }
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Songwright</h1>
-  <span class="subtitle">Suno V5 Prompt Engine</span>
-</div>
+<header class="header">
+  <div>
+    <h1>SONGWRIGHT</h1>
+    <span class="subtitle">AI LYRIC ENGINE + SUNO V5</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn-randomize" onclick="randomizeEmpty()" title="Fill empty fields with random values">Randomize</button>
+    <button class="btn-example" onclick="loadExample()" title="Load a full random example">Example</button>
+    <label class="expert-toggle" title="Show advanced controls">
+      <span class="expert-label">Easy</span>
+      <input type="checkbox" id="expert-toggle" onchange="toggleExpertMode(this.checked)">
+      <span class="expert-slider"></span>
+    </label>
+  </div>
+</header>
+<div class="tagline" id="tagline"></div>
 
-<div class="app">
+<nav class="tab-bar">
+  <button class="tab active" onclick="switchTab('collect')" data-tab="collect">Collect</button>
+  <button class="tab" onclick="switchTab('style')" data-tab="style">Style</button>
+  <button class="tab" onclick="switchTab('generate')" data-tab="generate">Generate</button>
+</nav>
 
-  <!-- ═══════════════════════════════════════════
-       PANEL 1: STYLE PROMPT BUILDER
-       ═══════════════════════════════════════════ -->
+<main class="container">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PANEL 1: COLLECT — Source audio, lyrics idea, instrumental toggle
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-collect">
+  <div class="panel">
+    <div class="panel-title">Collect</div>
+
+    <!-- SOURCE AUDIO -->
+    <label for="file-input">Reference Track <span style="color:var(--text-muted);font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;">(optional — your own original work, max 8 min)</span></label>
+    <div id="drop-zone" class="drop-zone" onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept="audio/*" style="display:none" onchange="handleFileSelect(this.files)">
+      <div id="drop-zone-content">
+        <div class="drop-zone-icon">&#127911;</div>
+        <div class="drop-zone-text" id="drop-zone-text">Drop your reference track here</div>
+        <div class="drop-zone-hint">MP3, WAV, M4A, or FLAC — max 8 min, your own work only</div>
+      </div>
+      <div id="drop-zone-file" style="display:none;">
+        <div id="uploaded-file-name" class="uploaded-file-name"></div>
+        <div id="upload-status" class="upload-status"></div>
+        <button type="button" class="btn-remove-file" onclick="event.stopPropagation(); clearUploadedFile();">&#x2715;</button>
+      </div>
+    </div>
+    <input type="hidden" id="reference-url" value="">
+    <div style="margin-top:6px;">
+      <span class="secret-toggle" onclick="toggleSecretUrl()">or paste a URL directly</span>
+      <div id="secret-url-row" style="display:none;margin-top:6px;">
+        <input type="text" id="reference-url-manual" placeholder="https://cdn1.suno.ai/...mp3" oninput="document.getElementById('reference-url').value=this.value">
+      </div>
+    </div>
+
+    <div id="cover-controls" class="expert-only" style="margin-top:12px;">
+      <span class="label">Cover Mix <span style="color:var(--text-muted);font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;">(V5 — balance source audio, style prompt, and creative deviation)</span></span>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:6px;">
+        <div>
+          <label for="audio-weight" style="margin-top:0;">Audio Weight <span id="aw-val" style="color:var(--accent);font-size:12px;">0.65</span></label>
+          <input type="range" id="audio-weight" min="0" max="1" step="0.05" value="0.65" oninput="document.getElementById('aw-val').textContent=this.value" style="width:100%;accent-color:var(--accent);">
+        </div>
+        <div>
+          <label for="style-weight" style="margin-top:0;">Style Weight <span id="sw-val" style="color:var(--accent);font-size:12px;">0.65</span></label>
+          <input type="range" id="style-weight" min="0" max="1" step="0.05" value="0.65" oninput="document.getElementById('sw-val').textContent=this.value" style="width:100%;accent-color:var(--accent);">
+        </div>
+        <div>
+          <label for="weirdness-constraint" style="margin-top:0;">Weirdness <span id="wc-val" style="color:var(--accent);font-size:12px;">0.65</span></label>
+          <input type="range" id="weirdness-constraint" min="0" max="1" step="0.05" value="0.65" oninput="document.getElementById('wc-val').textContent=this.value" style="width:100%;accent-color:var(--accent);">
+        </div>
+      </div>
+    </div>
+
+    <!-- LYRICS / IDEA INPUT -->
+    <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span class="label" style="margin:0;">Lyrics</span>
+        <label for="instrumental-toggle" style="margin:0;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-muted);">
+          <input type="checkbox" id="instrumental-toggle" onchange="toggleInstrumental(this.checked)" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer;">
+          Instrumental (no lyrics)
+        </label>
+      </div>
+
+      <div id="lyrics-editor-content">
+        <div class="tip-box" style="margin-bottom:12px;">
+          <strong>Give me something to work with:</strong> Paste full lyrics, a rough idea, a story you want to tell, or even just a theme. Hit "Develop with Claude" and GMA-Assist will craft Suno-ready lyrics with [bracketed] dynamic tags.
+        </div>
+
+        <textarea id="lyrics-input" rows="12" placeholder="Paste lyrics, describe an idea, tell me a story...&#10;&#10;Examples:&#10;- &quot;A song about watching city lights from a rooftop at 3am, feeling both free and lonely&quot;&#10;- &quot;Write something about how technology connects us but makes us feel more isolated&quot;&#10;- Or just paste rough lyrics and I'll polish them"></textarea>
+
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btn-develop-lyrics" onclick="developLyrics('develop')">Develop with Claude</button>
+          <button class="btn" id="btn-polish-lyrics" onclick="developLyrics('polish')" title="Apply GMA rules and add bracketed descriptors to existing lyrics">Polish &amp; Tag</button>
+        </div>
+        <div id="lyrics-develop-status" style="margin-top:8px;font-size:12px;color:var(--text-muted);"></div>
+
+        <div class="row" style="margin-top:8px;">
+          <div class="counter" id="word-counter">0 words</div>
+          <div class="counter" id="lyrics-word-limit"></div>
+        </div>
+
+        <div class="expert-only" style="margin-top:12px;">
+          <span class="label">Structure Templates</span>
+          <div class="template-bar" id="template-bar"></div>
+
+          <span class="label">Section Lengths</span>
+          <div class="section-counts" id="section-counts"></div>
+
+          <span class="label">Pronunciation Risks</span>
+          <div class="risk-list" id="risk-list">
+            <div style="color:var(--text-muted); font-size:11px;">Type lyrics above to scan...</div>
+          </div>
+        </div>
+
+        <!-- Quality Check (inline) -->
+        <div class="expert-only" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span class="label" style="margin:0;">Quality Check</span>
+            <button class="btn btn-sm" id="run-quality-check" onclick="runQualityCheck()">Run the Gauntlet</button>
+          </div>
+          <div id="qc-results" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <div id="instrumental-notice" style="display:none;margin:16px 0;padding:16px;background:var(--accent-light);border-radius:8px;text-align:center;">
+        <div style="font-size:24px;margin-bottom:8px;">&#127925;</div>
+        <div style="font-weight:500;">Instrumental mode — no lyrics needed</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Suno will generate a pure instrumental track based on your style prompt.</div>
+      </div>
+    </div>
+
+    <div class="panel-nav">
+      <button class="btn-nav" onclick="switchTab('style')">Continue to Style &rarr;</button>
+    </div>
+  </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PANEL 2: STYLE — Presets first, then roll-your-own builder
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-style">
   <div class="panel" id="panel-style">
-    <div class="panel-title">Style Prompt Builder</div>
+    <div class="panel-title">Style</div>
 
-    <label>Genre</label>
-    <input type="text" id="genre-search" class="search-input" placeholder="Search genres..." autocomplete="off">
+    <!-- PRESETS -->
+    <span class="label">Presets</span>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+      <button class="btn btn-sm" onclick="loadPreset('acappella')">A Cappella Modern</button>
+      <button class="btn btn-sm" onclick="loadPreset('pourover_vocal')">POUROVER (Vocal)</button>
+      <button class="btn btn-sm" onclick="loadPreset('pourover_instrumental')">POUROVER (Instrumental)</button>
+      <button class="btn btn-sm" onclick="loadPreset('slow_burn')">Slow Burn</button>
+      <button class="btn btn-sm" onclick="loadPreset('retro_synthwave')">Retro Synthwave</button>
+      <button class="btn btn-sm" onclick="loadPreset('dark_art_pop')">Dark Art Pop</button>
+      <button class="btn btn-sm" onclick="loadPreset('scifi_ambient')">Sci-Fi Ambient</button>
+    </div>
+
+    <div id="preset-active-banner" style="display:none;margin-top:12px;padding:10px 14px;background:var(--accent-light);border-radius:8px;font-size:13px;">
+      <strong id="preset-active-name"></strong> preset active — fields below are bypassed.
+      <button onclick="clearPresetOverride();document.getElementById('preset-active-banner').style.display='none';" style="margin-left:8px;padding:2px 10px;border-radius:4px;border:1px solid var(--accent);background:none;color:var(--accent);cursor:pointer;font-size:11px;">Clear Preset</button>
+    </div>
+
+    <!-- DIVIDER -->
+    <div style="margin:20px 0;display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <span style="font-size:12px;color:var(--text-muted);white-space:nowrap;">or roll your own</span>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+
+    <!-- STYLE BUILDER -->
+    <label for="genre-select">Genre</label>
     <select id="genre-select"></select>
-
     <div class="genre-info" id="genre-info" style="display:none;"></div>
 
     <div class="row">
       <div>
-        <label>BPM</label>
+        <label for="bpm-input">BPM</label>
         <input type="number" id="bpm-input" min="40" max="220" placeholder="120">
       </div>
       <div>
-        <label>Key (optional)</label>
+        <label for="key-select">Key (optional)</label>
         <select id="key-select">
           <option value="">Any</option>
         </select>
       </div>
     </div>
 
-    <label>Mood / Energy</label>
+    <span class="label" role="group" aria-label="Mood / Energy">Mood / Energy</span>
     <div class="chip-container" id="mood-chips"></div>
 
-    <label>Instruments (search &amp; select)</label>
+    <label for="instrument-search">Tags</label>
     <input type="text" id="instrument-search" class="search-input" placeholder="Search 500+ tags..." autocomplete="off">
     <div class="tag-results" id="instrument-results"></div>
     <div class="selected-tags" id="selected-instruments"></div>
 
-    <label>Vocal Description</label>
+    <span class="label">Vocal Description</span>
     <div class="row">
       <div>
-        <label style="margin-top:0">Gender</label>
+        <label for="vocal-gender" style="margin-top:0">Gender</label>
         <select id="vocal-gender">
           <option value="">Any</option>
           <option value="male">Male</option>
@@ -533,101 +1088,145 @@ textarea {
         </select>
       </div>
       <div>
-        <label style="margin-top:0">Texture</label>
+        <label for="vocal-texture" style="margin-top:0">Texture</label>
         <select id="vocal-texture"><option value="">Select...</option></select>
       </div>
     </div>
     <div class="row">
       <div>
-        <label>Style</label>
+        <label for="vocal-style">Style</label>
         <select id="vocal-style"><option value="">Select...</option></select>
       </div>
-      <div>
-        <label>Regional (optional)</label>
+      <div class="expert-only">
+        <label for="vocal-regional">Regional (optional)</label>
         <select id="vocal-regional"><option value="">None</option></select>
       </div>
     </div>
 
-    <label>Production Notes (optional)</label>
+    <div class="expert-only">
+    <label for="production-notes">Production Notes (optional)</label>
     <input type="text" id="production-notes" placeholder="e.g. Analog glue compression; tape saturation">
+    </div>
 
-    <label>
+    <!-- Paste your own prompt -->
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px;">
+      <label for="raw-prompt-input">Paste Raw Prompt <span style="color:var(--text-muted);font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;">(we'll extrapolate what we can)</span></label>
+      <textarea id="raw-prompt-input" rows="3" placeholder="Paste a full style description..."></textarea>
+      <button class="btn btn-sm" style="margin-top:6px;" onclick="extrapolatePrompt()">Extrapolate</button>
+    </div>
+
+    <!-- LIVE PREVIEW -->
+    <span class="label" style="margin-top:20px;">
       Live Preview
       <span class="descriptor-badge" id="descriptor-badge"></span>
-    </label>
-    <div class="preview-box" id="style-preview">Select a genre to begin...</div>
+    </span>
+    <div class="preview-box" id="style-preview">Pick a genre or choose a preset...</div>
     <div class="counter" id="char-counter">0 / 1000 characters</div>
     <button class="btn btn-copy" id="copy-style" onclick="copyToClipboard('style-preview', this)">Copy Style Prompt</button>
-  </div>
 
-  <!-- ═══════════════════════════════════════════
-       PANEL 2: LYRICS EDITOR
-       ═══════════════════════════════════════════ -->
-  <div class="panel" id="panel-lyrics">
-    <div class="panel-title">Lyrics Editor</div>
-
-    <label>Structure Templates</label>
-    <div class="template-bar" id="template-bar"></div>
-
-    <label>Lyrics</label>
-    <textarea id="lyrics-input" rows="20" placeholder="Write or paste your lyrics here...&#10;&#10;Use structure tags like [Verse 1], [Chorus], etc.&#10;The pronunciation scanner will highlight risky words as you type."></textarea>
-
-    <div class="row" style="margin-top:8px;">
-      <div class="counter" id="word-counter">0 words</div>
-      <div class="counter" id="lyrics-word-limit"></div>
-    </div>
-
-    <label>Section Lengths</label>
-    <div class="section-counts" id="section-counts"></div>
-
-    <label>Pronunciation Risks</label>
-    <div class="risk-list" id="risk-list">
-      <div style="color:var(--text-muted); font-size:11px;">Type lyrics above to scan...</div>
+    <div class="panel-nav">
+      <button class="btn-nav" onclick="switchTab('generate')">Continue to Generate &rarr;</button>
     </div>
   </div>
-
-  <!-- ═══════════════════════════════════════════
-       PANEL 3: QUALITY CHECK
-       ═══════════════════════════════════════════ -->
-  <div class="panel" id="panel-quality">
-    <div class="panel-title">Quality Check</div>
-    <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">
-      AI-powered 13-point lyric analysis via Claude API.
-      Requires lyrics and a selected genre.
-    </p>
-    <button class="btn btn-primary" id="run-quality-check" onclick="runQualityCheck()">
-      Run Quality Check
-    </button>
-    <div id="qc-results" style="margin-top:16px;"></div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
-       PANEL 4: SUNO-READY OUTPUT
-       ═══════════════════════════════════════════ -->
-  <div class="panel" id="panel-output">
-    <div class="panel-title">Suno-Ready Output</div>
+  <!-- ═══════════════════════════════════════════════════════════
+       PANEL 3: GENERATE — Review, title, launch, download
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-generate">
+  <div class="panel" id="panel-generate">
+    <div class="panel-title">
+      Generate
+      <span id="credits-badge" class="credits-badge"></span>
+    </div>
 
-    <label>Style Prompt (copy to Suno's style field)</label>
-    <div class="output-box" id="final-style-output"></div>
-    <button class="btn btn-copy btn-sm" style="margin-top:6px;" onclick="copyToClipboard('final-style-output', this)">Copy</button>
+    <!-- FINAL REVIEW -->
+    <span class="label">Style Prompt</span>
+    <div class="output-box" id="final-style-output" style="min-height:40px;max-height:150px;"></div>
+    <button class="btn btn-copy btn-sm" style="margin-top:4px;" onclick="copyToClipboard('final-style-output', this)">Copy</button>
 
-    <label>Lyrics (copy to Suno's lyrics field)</label>
-    <div class="output-box" id="final-lyrics-output"></div>
-    <button class="btn btn-copy btn-sm" style="margin-top:6px;" onclick="copyToClipboard('final-lyrics-output', this)">Copy</button>
+    <span class="label">Lyrics</span>
+    <div class="output-box" id="final-lyrics-output" style="min-height:40px;"></div>
+    <button class="btn btn-copy btn-sm" style="margin-top:4px;" onclick="copyToClipboard('final-lyrics-output', this)">Copy</button>
 
-    <a href="https://suno.com/create" target="_blank" rel="noopener" class="suno-link">Open Suno</a>
+    <a href="https://suno.com/create" target="_blank" rel="noopener" class="suno-link" style="margin-top:12px;font-size:12px;padding:6px 14px;">Open Suno</a>
+
+    <!-- GENERATE CONTROLS -->
+    <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:16px;">
+      <label for="song-title">Song Title</label>
+      <input type="text" id="song-title" placeholder="What's this one called?" maxlength="80">
+
+      <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
+        <button class="btn-generate" id="btn-generate" onclick="generateSong()">
+          Generate
+        </button>
+        <span id="generate-status" class="generate-status"></span>
+      </div>
+
+      <div id="generate-progress" style="display:none; margin-top: 16px;">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div id="progress-label" class="progress-label">Queued...</div>
+      </div>
+
+      <div id="generate-result" style="display:none; margin-top: 16px;">
+        <div id="song-cards"></div>
+      </div>
+
+      <div id="generate-error" class="generate-error" style="display:none;"></div>
+    </div>
+  </div>
   </div>
 
-</div>
+</main>
 
 <!-- Risk popup (shared) -->
 <div class="risk-popup" id="risk-popup">
   <div class="risk-level" id="popup-risk-level"></div>
   <div id="popup-issue"></div>
-  <div id="popup-suggestion" style="color:var(--copper-light); margin-top:6px;"></div>
+  <div id="popup-suggestion" style="color:var(--accent); margin-top:6px;"></div>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    if (p.id === 'tab-' + name) {
+      p.classList.add('active');
+      p.style.animation = 'none';
+      p.offsetHeight; // reflow
+      p.style.animation = 'fadeIn 0.2s ease';
+    } else {
+      p.classList.remove('active');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPERT MODE
+// ═══════════════════════════════════════════════════════════════
+function toggleExpertMode(on) {
+  document.body.classList.toggle('expert-mode', on);
+  document.querySelector('.expert-label').textContent = on ? 'Expert' : 'Easy';
+  localStorage.setItem('songwright-expert', on ? '1' : '0');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAGLINE ROTATION
+// ═══════════════════════════════════════════════════════════════
+const TAGLINES = [
+  "PASTE AN IDEA. GET LYRICS. GENERATE.",
+  "GMA-ASSIST LYRIC ENGINE — 67 GENRES.",
+  "YOUR WORDS IN. SUNO-READY OUT.",
+  "CLAUDE-POWERED LYRIC DEVELOPMENT.",
+  "FROM IDEA TO AUDIO IN THREE STEPS.",
+  "THE TOLLBOOTH METHOD — EVERY SECTION EARNS ITS PLACE.",
+];
+
 // ═══════════════════════════════════════════════════════════════
 // INLINED DATA MODULES
 // ═══════════════════════════════════════════════════════════════
@@ -857,7 +1456,9 @@ const state = {
   vocalTexture: '',
   vocalStyle: '',
   vocalRegional: '',
-  productionNotes: ''
+  productionNotes: '',
+  instrumental: false,
+  presetOverride: ''
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -871,7 +1472,129 @@ document.addEventListener('DOMContentLoaded', () => {
   initTemplateBar();
   initInstrumentSearch();
   initEventListeners();
+  initDropZone();
+  fetchCredits();
+
+  // Rotating tagline
+  const tagEl = document.getElementById('tagline');
+  if (tagEl) tagEl.textContent = TAGLINES[Math.floor(Math.random() * TAGLINES.length)];
+
+  // Restore expert mode preference
+  if (localStorage.getItem('songwright-expert') === '1') {
+    document.getElementById('expert-toggle').checked = true;
+    toggleExpertMode(true);
+  }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// RANDOMIZER & EXAMPLE
+// ═══════════════════════════════════════════════════════════════
+const TITLE_ADJ = ["Midnight","Electric","Golden","Broken","Silver","Velvet","Neon","Hollow","Last","Wild","Paper","Iron","Crystal","Burning","Silent","Lost","Heavy","Fading","Crimson","Distant"];
+const TITLE_NOUN = ["Highway","Echoes","Rainfall","Skyline","Thunder","Roses","Horizon","Shadows","Waves","Letters","Bridges","Empire","Wolves","Cathedral","Signal","Embers","Fever","Siren","Anthem","Coastline"];
+const GENRE_TO_TEMPLATE = {rock:'pop_rock','alternative':'pop_rock','indie-rock':'pop_rock','garage-rock':'punk','grunge':'punk','punk':'punk','hardcore-punk':'punk','emo':'pop_rock','post-rock':'pop_rock','progressive-rock':'pop_rock','psychedelic-rock':'pop_rock','shoegaze':'pop_rock','surf-rock':'pop_rock','new-wave':'pop_rock','celtic-punk':'punk','ska-punk':'punk','piano-rock':'pop_rock','metal':'metal','black-metal':'metal','doom-metal':'metal','thrash-metal':'metal','metalcore':'metal','industrial':'metal','electronic':'edm','edm':'edm','house':'edm','techno':'edm','trance':'edm','dubstep':'edm','drum-and-bass':'edm','synthwave':'edm','ambient':'edm','chillwave':'edm','lo-fi':'edm','vaporwave':'edm','hyperpop':'edm','disco':'pop_rock','trip-hop':'edm','hip-hop':'hip_hop','trap':'hip_hop','drill':'hip_hop','grime':'hip_hop','phonk':'hip_hop','nerdcore':'hip_hop','pop':'pop_rock','k-pop':'k_pop','piano-pop':'pop_rock','r-and-b':'pop_rock','funk':'pop_rock','gospel':'pop_rock','afrobeats':'pop_rock','country':'folk','folk':'folk','americana':'folk','bluegrass':'folk','indie-folk':'folk','singer-songwriter':'folk','jazz':'blues_aab','blues':'blues_aab','classical':'pop_rock','opera':'pop_rock','swing':'blues_aab','reggae':'pop_rock','dancehall':'pop_rock','latin':'pop_rock','bossa-nova':'blues_aab','cinematic':'pop_rock'};
+
+function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function pickRandomN(arr, min, max) {
+  const n = min + Math.floor(Math.random() * (max - min + 1));
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, n);
+}
+function randomBpmInRange(rangeStr) {
+  if (!rangeStr) return 80 + Math.floor(Math.random() * 80);
+  const m = rangeStr.match(/(\d+)\s*-\s*(\d+)/);
+  if (!m) return 120;
+  const lo = parseInt(m[1]), hi = parseInt(m[2]);
+  return lo + Math.floor(Math.random() * (hi - lo + 1));
+}
+function randomTitle() { return pickRandom(TITLE_ADJ) + ' ' + pickRandom(TITLE_NOUN); }
+
+function syncUIFromState() {
+  document.getElementById('genre-select').value = state.genre;
+  document.getElementById('bpm-input').value = state.bpm || '';
+  document.getElementById('key-select').value = state.key;
+  document.getElementById('vocal-gender').value = state.vocalGender;
+  document.getElementById('vocal-texture').value = state.vocalTexture;
+  document.getElementById('vocal-style').value = state.vocalStyle;
+  document.getElementById('vocal-regional').value = state.vocalRegional;
+  document.getElementById('production-notes').value = state.productionNotes;
+  // Sync mood chips
+  document.querySelectorAll('#mood-chips .chip').forEach(chip => {
+    const active = state.moods.includes(chip.textContent.toLowerCase());
+    chip.classList.toggle('active', active);
+  });
+  // Sync instruments
+  renderSelectedInstruments();
+  updateGenreInfo();
+  updatePreview();
+  onLyricsChange();
+}
+
+function randomizeEmpty() {
+  const activeTab = document.querySelector('.tab.active')?.dataset.tab;
+  const genreKeys = Object.keys(genreDatabase);
+
+  if (activeTab === 'collect') {
+    // Randomize lyrics on collect tab
+    const lyricsInput = document.getElementById('lyrics-input');
+    if (!lyricsInput.value.trim()) {
+      const genreKeys = Object.keys(genreDatabase);
+      if (!state.genre) { state.genre = pickRandom(genreKeys); }
+      const tplKey = GENRE_TO_TEMPLATE[state.genre] || 'pop_rock';
+      lyricsInput.value = GENRE_TEMPLATES[tplKey].join('\n\n\n');
+      onLyricsChange();
+    }
+    return;
+  } else if (activeTab === 'style') {
+    if (!state.genre) state.genre = pickRandom(genreKeys);
+    const g = genreDatabase[state.genre];
+    if (!state.bpm) state.bpm = randomBpmInRange(g ? g.bpmRange : null);
+    if (!state.key) state.key = pickRandom(KEYS);
+    if (state.moods.length === 0) state.moods = pickRandomN(MOODS, 1, 3).map(m => m.toLowerCase());
+    if (state.instruments.length === 0) state.instruments = pickRandomN(ALL_TAGS, 1, 3);
+    if (!state.vocalGender) state.vocalGender = pickRandom(['male', 'female']);
+    if (!state.vocalTexture) state.vocalTexture = pickRandom(VOCAL_TEXTURES).toLowerCase();
+    if (!state.vocalStyle) state.vocalStyle = pickRandom(VOCAL_STYLES).toLowerCase();
+  } else if (activeTab === 'generate') {
+    const titleInput = document.getElementById('song-title');
+    if (!titleInput.value.trim()) titleInput.value = randomTitle();
+    return;
+  } else {
+    // Other tabs — no-op
+    return;
+  }
+  syncUIFromState();
+}
+
+function loadExample() {
+  // Check if form has content
+  const hasContent = state.genre || state.bpm || state.moods.length > 0 ||
+    state.instruments.length > 0 || document.getElementById('lyrics-input').value.trim();
+  if (hasContent && !confirm('This will replace your current work. Continue?')) return;
+
+  // Reset everything
+  const genreKeys = Object.keys(genreDatabase);
+  state.genre = pickRandom(genreKeys);
+  const g = genreDatabase[state.genre];
+  state.bpm = randomBpmInRange(g.bpmRange);
+  state.key = pickRandom(KEYS);
+  state.moods = pickRandomN(MOODS, 2, 3).map(m => m.toLowerCase());
+  state.instruments = pickRandomN(ALL_TAGS, 2, 3);
+  state.vocalGender = pickRandom(['male', 'female']);
+  state.vocalTexture = pickRandom(VOCAL_TEXTURES).toLowerCase();
+  state.vocalStyle = pickRandom(VOCAL_STYLES).toLowerCase();
+  state.vocalRegional = '';
+  state.productionNotes = '';
+
+  // Lyrics from genre template
+  const tplKey = GENRE_TO_TEMPLATE[state.genre] || 'pop_rock';
+  document.getElementById('lyrics-input').value = GENRE_TEMPLATES[tplKey].join('\n\n\n');
+
+  // Song title
+  document.getElementById('song-title').value = randomTitle();
+
+  syncUIFromState();
+  switchTab('collect');
+}
 
 function initGenreSelect() {
   const sel = document.getElementById('genre-select');
@@ -1014,16 +1737,7 @@ function renderSelectedInstruments() {
 }
 
 function initEventListeners() {
-  const genreSearch = document.getElementById('genre-search');
   const genreSelect = document.getElementById('genre-select');
-
-  genreSearch.addEventListener('input', () => {
-    const q = genreSearch.value.toLowerCase();
-    const opts = genreSelect.options;
-    for (let i = 1; i < opts.length; i++) {
-      opts[i].style.display = opts[i].textContent.toLowerCase().includes(q) ? '' : 'none';
-    }
-  });
 
   genreSelect.addEventListener('change', () => {
     state.genre = genreSelect.value;
@@ -1072,7 +1786,57 @@ function initEventListeners() {
 // ═══════════════════════════════════════════════════════════════
 // STYLE PROMPT PREVIEW
 // ═══════════════════════════════════════════════════════════════
+const STYLE_PREFIX = 'Is_MAX_MODE: MAX, QUALITY: MAX, REALISM: MAX, REAL_INSTRUMENTS: MAX, [START_ON: TRUE]';
+
+const STYLE_PRESETS = {
+  acappella: {
+    name: 'A Cappella Modern',
+    instrumental: false,
+    vocalGender: 'female',
+    prompt: 'A cappella modern choral music, An ethereal, atmospheric vocal ensemble, The sound is defined by lush, warm, straight-tone (non-vibrato) vocals, creating a pure and unified texture, The harmonic structure is deeply complex, built on intricate, stacked cluster chords and rich divisi parts, Soaring polyphonic lines weave together, creating an immersive and panoramic soundscape, Harmonies are sophisticated, intentional, and breathtakingly beautiful, blending modern classical sensibilities with advanced pop harmonic language, The arrangement is purely vocal, with intricate close harmonies and layered backing vocals that swell and recede, This is music that feels both ancient and futuristic, a massive, enveloping cloud of human voices focused on pure harmonic beauty and emotional resonance, The focus is on the "beauty over everything" aesthetic, where every complex chord resolves perfectly, creating a sense of profound peace and wonder, No instruments, just the power of the human voice'
+  },
+  pourover_vocal: {
+    name: 'POUROVER (Vocal)',
+    instrumental: false,
+    vocalGender: 'female',
+    prompt: 'Airy female vocals, Melodic Art-Pop, Cinematic Electronic, Ambient Techno-Pop, Sophisticated, hypnotic, and ethereal mood, Features an airy female vocal, heavily layered with reverb and subtle digital processing to achieve a ghostly, Art-Pop texture, The song maintains a steady, propulsive tempo (120-125 BPM) built around a deep, round, and slightly resonant melodic synth bassline (Stephan Bodzin influence), Percussion is intricate and detailed (shakers, processed hi-hats) rather than relying on a heavy dance-pop snare, The arrangement is driven by constantly evolving, rhythmic synth arpeggios and vast, atmospheric pads, emphasizing texture, dynamism, and depth over overt pop structure, The production is clean, spacious, and highly dynamic'
+  },
+  pourover_instrumental: {
+    name: 'POUROVER (Instrumental)',
+    instrumental: true,
+    prompt: '(Ambient Electronic), (Rolling Modular Synth Loops), (Alessandro Cortini Style), (Lo-Fi Analog), (Melancholic), (Introspective), (Cinematic), (Deep Sub Bass Anchors), (Washed-Out Tape Hiss), (Industrial Grit), (Subtle Motorik Pulse), (Drenched In Reverb And Cascading Tape Delay), (Slow Evolving Filters), (Analog Saturation), (Hypnotic Repetition), (Vocal Processing: Processed, Distant, Filtered, Slight Vinyl Crackle; Filter opens for clarity in each chorus), (Final Chorus: Vocals layered with cascading delay trails, Wall of Sound, Swelling Fuzz, emotional peak, Arp Odyssey Lead), (tight low end, punchy kick, bitcrushed snares, parallel saturation on drums, upfront dry vocals, subtle slap delay, wide-panned background vocals, gentle vocal de-essing, mix bus glue with SSL comp, tape saturation for warmth, transparent limiter)'
+  },
+  slow_burn: {
+    name: 'Slow Burn',
+    instrumental: false,
+    vocalGender: 'female',
+    prompt: 'Minimal Electronic, Art Pop, Electropop, Slow Burn, A song of two halves with a massive dynamic shift, The first half is sparse and atmospheric, built around a simple, filtered synth arpeggio, a deep 808 sub-bass, and a minimalist beat of soft kicks and finger snaps, The female vocal is raw, intimate, and almost-spoken, After the bridge, the song explodes into a loud, cathartic, and defiant electronic wall of sound, This second half features a huge, distorted 808 kick, an aggressive, fuzzy synth bass, and bright, detuned supersaw synth chords, The vocals transform into a powerful, belted, emotional performance, heavily layered with digital harmonies and reverb, Production is clean, modern, and bass-heavy, emphasizing the extreme dynamic shift from minimalist intimacy to a maximalist electronic release'
+  },
+  retro_synthwave: {
+    name: 'Retro Synthwave',
+    instrumental: true,
+    prompt: 'Retro-futuristic electronic, 80s cinematic synthwave, epic chiptune orchestral, Mysterious, epic, awe-inspiring, suspenseful, beautiful, dangerous, Starts with a driving, heroic 8-bit arpeggio and synth bassline (Tachyon 8-bit core), Gradually introduces lush, symphonic strings and brass building cinematic tension, Features a prominent, shimmering stereo delay and reverb creating vast sonic space, Builds to a climactic, ethereal moment where THE MOST BEAUTIFUL CHORD AND SOUND EVER HEARD slowly blooms and resonates, simultaneously glorious and unnerving, then fades into a lingering mystery, Percussion is tight, gated 80s drums, mixed with subtle glitch effects'
+  },
+  dark_art_pop: {
+    name: 'Dark Art Pop',
+    instrumental: false,
+    vocalGender: 'female',
+    prompt: 'Art Pop, Minimal Electronic, Electropop, Dark Pop, Slow Burn, massive dynamic shift, soft but aggressive female vocal, raw intimate spoken verses, powerful belted emotional chorus, sultry lower register, sharp cutting tone, unapologetic attitude, controlled rhythmic flow, deep 808 sub-bass, huge distorted 808 kick, aggressive fuzzy synth bass, clean hip hop drums, crisp hi-hats, syncopated trap snare, minimal percussion, filtered synth arpeggio, cold synthesizer pads, bright detuned supersaw chords, layered ethereal backing vocals, digital harmonies, vocal manipulation effects, subtle autotune shimmer, slick modern production, clean, bass-heavy, high-fidelity, dark atmospheric soundscape, sparse verses, explosive cathartic chorus'
+  },
+  scifi_ambient: {
+    name: 'Sci-Fi Ambient',
+    instrumental: false,
+    vocalGender: 'female',
+    prompt: 'Atmospheric Sci-Fi, Ambient Electronic, Cinematic Pop, A fusion of ethereal dream pop and dark wave, The track is built on shimmering synth pads, glitching digital artifacts, and a deep, slow sub-bass drone that feels like a sleeping machine, A lonely, melancholic piano motif repeats throughout, The beat is minimalist and sparse, using processed clicks, soft static, and a heavy, reverb-drenched electronic snare in the chorus, The female vocal is androgynous, haunting, and heavily processed with delay and reverb, delivered in a half-spoken, half-sung melancholic style, The production is spacious and clean, with a wide stereo image and a mood that is both dystopian and strangely hopeful'
+  }
+};
+
 function buildStylePrompt() {
+  // Check if a preset override is active
+  if (state.presetOverride) {
+    return STYLE_PREFIX + ', ' + state.presetOverride;
+  }
+
   const parts = [];
 
   // Genre
@@ -1103,7 +1867,8 @@ function buildStylePrompt() {
   // Production notes
   if (state.productionNotes.trim()) parts.push(state.productionNotes.trim());
 
-  return parts.join('; ');
+  const built = parts.join('; ');
+  return built ? STYLE_PREFIX + ', ' + built : '';
 }
 
 function countDescriptors() {
@@ -1124,7 +1889,7 @@ function updatePreview() {
   const charCounter = document.getElementById('char-counter');
   const badge = document.getElementById('descriptor-badge');
 
-  preview.textContent = prompt || 'Select a genre to begin...';
+  preview.textContent = prompt || 'Pick a genre or choose a preset...';
 
   // Character counter
   const len = prompt.length;
@@ -1231,6 +1996,166 @@ function getGenreByBPM(genre, bpm) {
 // LYRICS EDITOR
 // ═══════════════════════════════════════════════════════════════
 let scanTimeout;
+// ═══════════════════════════════════════════════════════════════
+// INSTRUMENTAL TOGGLE
+// ═══════════════════════════════════════════════════════════════
+function toggleInstrumental(checked) {
+  state.instrumental = checked;
+  document.getElementById('lyrics-editor-content').style.display = checked ? 'none' : '';
+  document.getElementById('instrumental-notice').style.display = checked ? 'block' : 'none';
+  // Update final lyrics output
+  if (checked) {
+    updateFinalLyrics('[Instrumental]');
+  } else {
+    updateFinalLyrics(document.getElementById('lyrics-input').value);
+  }
+  updatePreview();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STYLE PRESETS
+// ═══════════════════════════════════════════════════════════════
+function loadPreset(key) {
+  const preset = STYLE_PRESETS[key];
+  if (!preset) return;
+
+  if (!confirm(`Load "${preset.name}" preset? This will override your style prompt.`)) return;
+
+  // Set the preset override — buildStylePrompt will use it
+  state.presetOverride = preset.prompt;
+
+  // Show preset banner in style panel
+  document.getElementById('preset-active-name').textContent = preset.name;
+  document.getElementById('preset-active-banner').style.display = 'block';
+
+  // Set instrumental if preset specifies it
+  if (preset.instrumental) {
+    state.instrumental = true;
+    document.getElementById('instrumental-toggle').checked = true;
+    toggleInstrumental(true);
+  } else {
+    state.instrumental = false;
+    document.getElementById('instrumental-toggle').checked = false;
+    toggleInstrumental(false);
+  }
+
+  // Set vocal gender if preset specifies it
+  if (preset.vocalGender) {
+    state.vocalGender = preset.vocalGender;
+    const vgEl = document.getElementById('vocal-gender');
+    if (vgEl) vgEl.value = preset.vocalGender;
+  }
+
+  updatePreview();
+}
+
+function clearPresetOverride() {
+  state.presetOverride = '';
+  updatePreview();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROMPT EXTRAPOLATION
+// ═══════════════════════════════════════════════════════════════
+function extrapolatePrompt() {
+  const raw = document.getElementById('raw-prompt-input').value.trim();
+  if (!raw) { alert('Paste a prompt first.'); return; }
+
+  const lower = raw.toLowerCase();
+
+  // Try to detect genre from genreDatabase
+  const genreKeys = Object.keys(genreDatabase);
+  for (const key of genreKeys) {
+    const gName = genreDatabase[key].name.toLowerCase();
+    if (lower.includes(gName)) {
+      state.genre = key;
+      break;
+    }
+  }
+
+  // Detect BPM
+  const bpmMatch = raw.match(/(\d{2,3})\s*(?:bpm|BPM)/);
+  if (bpmMatch) state.bpm = parseInt(bpmMatch[1]);
+
+  // Detect vocal gender
+  if (lower.includes('female vocal') || lower.includes('female voice') || lower.includes('airy female')) {
+    state.vocalGender = 'female';
+  } else if (lower.includes('male vocal') || lower.includes('male voice') || lower.includes('baritone')) {
+    state.vocalGender = 'male';
+  }
+
+  // Detect instrumental
+  if (lower.includes('instrumental') || lower.includes('no vocals') || lower.includes('no voice')) {
+    state.instrumental = true;
+    document.getElementById('instrumental-toggle').checked = true;
+    toggleInstrumental(true);
+  }
+
+  // Detect moods
+  const moodList = ['ethereal','melancholic','aggressive','dreamy','upbeat','dark','uplifting',
+    'atmospheric','haunting','hypnotic','energetic','chill','introspective','cinematic',
+    'nostalgic','euphoric','intense','playful','sophisticated'];
+  const foundMoods = moodList.filter(m => lower.includes(m));
+  if (foundMoods.length > 0) state.moods = foundMoods.slice(0, 3);
+
+  // Store remaining as production notes
+  state.productionNotes = raw;
+
+  syncUIFromState();
+  updatePreview();
+  switchTab('style');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLAUDE LYRICS DEVELOPMENT (GMA-Assist)
+// ═══════════════════════════════════════════════════════════════
+async function developLyrics(mode) {
+  const input = document.getElementById('lyrics-input').value.trim();
+  if (!input) { alert('Give me something to work with — an idea, a story, or rough lyrics.'); return; }
+
+  const btnDev = document.getElementById('btn-develop-lyrics');
+  const btnPol = document.getElementById('btn-polish-lyrics');
+  const statusEl = document.getElementById('lyrics-develop-status');
+
+  btnDev.disabled = true;
+  btnPol.disabled = true;
+  const activeBtn = mode === 'polish' ? btnPol : btnDev;
+  const origText = activeBtn.textContent;
+  activeBtn.innerHTML = '<span class="spinner"></span>' + (mode === 'polish' ? 'Polishing...' : 'Developing...');
+  statusEl.textContent = 'Claude is writing — this takes 10-20 seconds...';
+
+  try {
+    const resp = await fetch('/api/lyrics-develop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input,
+        genre: state.genre || '',
+        stylePrompt: buildStylePrompt(),
+        mode: mode === 'polish' ? 'polish' : 'develop'
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    if (data.lyrics) {
+      document.getElementById('lyrics-input').value = data.lyrics;
+      onLyricsChange();
+      statusEl.innerHTML = '<span style="color:var(--green);">Done — lyrics developed. Edit as needed.</span>';
+    }
+  } catch (err) {
+    statusEl.innerHTML = '<span style="color:var(--red);">Error: ' + err.message + '</span>';
+  } finally {
+    btnDev.disabled = false;
+    btnPol.disabled = false;
+    activeBtn.textContent = origText;
+  }
+}
+
 function onLyricsChange() {
   const text = document.getElementById('lyrics-input').value;
 
@@ -1276,7 +2201,7 @@ function renderRisks(risks) {
       <div>
         <strong>${r.word}</strong> (line ${r.line})<br>
         <span style="color:var(--text-muted)">${r.issue}</span><br>
-        <span style="color:var(--copper-light)">${r.suggestion}</span>
+        <span style="color:var(--accent)">${r.suggestion}</span>
       </div>
     </div>
   `).join('');
@@ -1368,7 +2293,7 @@ async function runQualityCheck() {
     results.innerHTML = `<div style="color:var(--red);">Error: ${err.message}</div>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Run Quality Check';
+    btn.textContent = 'Run the Gauntlet';
   }
 }
 
@@ -1379,6 +2304,8 @@ function renderQualityResults(items) {
     return;
   }
 
+  const fixable = items.filter(i => i.fix && (i.status === 'fail' || i.status === 'warn'));
+
   container.innerHTML = items.map(item => `
     <div class="qc-card ${item.status}">
       <span class="qc-status ${item.status}">${item.status.toUpperCase()}</span>
@@ -1387,6 +2314,61 @@ function renderQualityResults(items) {
       ${item.fix ? `<div class="qc-fix">Fix: ${item.fix}</div>` : ''}
     </div>
   `).join('');
+
+  if (fixable.length > 0) {
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'margin-top:12px;display:flex;gap:8px;align-items:center;';
+    btnRow.innerHTML = `<button class="btn btn-primary" id="btn-apply-fixes" onclick="applyQualityFixes()">Apply ${fixable.length} Fix${fixable.length > 1 ? 'es' : ''}</button>
+      <span style="font-size:12px;color:var(--text-muted);">AI will rewrite your lyrics to address the issues above</span>`;
+    container.appendChild(btnRow);
+    // Store fixes for later use
+    window._qcFixes = fixable;
+  }
+}
+
+async function applyQualityFixes() {
+  const fixes = window._qcFixes;
+  if (!fixes || !fixes.length) return;
+
+  const lyrics = document.getElementById('lyrics-input').value;
+  const genre = state.genre;
+  const bpm = state.bpm;
+  const stylePrompt = buildStylePrompt();
+
+  const btn = document.getElementById('btn-apply-fixes');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Fixing...';
+
+  try {
+    const resp = await fetch('/api/quality-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lyrics, genre, bpm, stylePrompt, mode: 'fix', fixes })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    if (data.fixedLyrics) {
+      document.getElementById('lyrics-input').value = data.fixedLyrics;
+      onLyricsChange();
+      btn.textContent = 'Applied!';
+      btn.style.background = 'var(--green)';
+      setTimeout(() => {
+        btn.textContent = 'Re-run the Gauntlet to verify';
+        btn.style.background = '';
+        btn.disabled = false;
+        btn.onclick = () => runQualityCheck();
+      }, 1500);
+    }
+  } catch (err) {
+    btn.textContent = 'Fix failed: ' + err.message;
+    btn.style.background = 'var(--red)';
+    btn.disabled = false;
+  }
 }
 
 
@@ -1394,25 +2376,383 @@ function renderQualityResults(items) {
 // FINAL OUTPUT
 // ═══════════════════════════════════════════════════════════════
 function updateFinalLyrics(text) {
-  document.getElementById('final-lyrics-output').textContent = text || 'Enter lyrics above...';
+  document.getElementById('final-lyrics-output').textContent = text || 'Your lyrics will appear here...';
 }
 
 
 // ═══════════════════════════════════════════════════════════════
+// SOURCE AUDIO UPLOAD
+// ═══════════════════════════════════════════════════════════════
+let uploadedFileUrl = '';
+
+function initDropZone() {
+  const zone = document.getElementById('drop-zone');
+  if (!zone) return;
+
+  const dropText = document.getElementById('drop-zone-text');
+  const origDropText = dropText ? dropText.textContent : '';
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+    if (dropText) dropText.textContent = 'Yes, right here. Let go.';
+  });
+  zone.addEventListener('dragleave', () => {
+    zone.classList.remove('drag-over');
+    if (dropText) dropText.textContent = origDropText;
+  });
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleFileSelect(e.dataTransfer.files);
+  });
+}
+
+async function handleFileSelect(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+
+  if (!file.type.startsWith('audio/')) {
+    alert('Please select an audio file (MP3, WAV, M4A, FLAC, etc.)');
+    return;
+  }
+
+  // 50MB limit for base64 upload (Kie.ai recommends ≤10MB for base64 but audio files are usually fine)
+  if (file.size > 50 * 1024 * 1024) {
+    alert('File is too large. Maximum 50MB.');
+    return;
+  }
+
+  const zone = document.getElementById('drop-zone');
+  const content = document.getElementById('drop-zone-content');
+  const fileDisplay = document.getElementById('drop-zone-file');
+  const fileName = document.getElementById('uploaded-file-name');
+  const status = document.getElementById('upload-status');
+
+  content.style.display = 'none';
+  fileDisplay.style.display = 'block';
+  zone.classList.add('has-file');
+  fileName.textContent = file.name;
+  status.textContent = 'Uploading...';
+  status.className = 'upload-status uploading';
+
+  try {
+    const base64 = await fileToBase64(file);
+
+    const resp = await fetch('/api/suno-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        base64: base64,
+        filename: file.name,
+        mimeType: file.type
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || 'Upload failed');
+    }
+
+    const data = await resp.json();
+    uploadedFileUrl = data.fileUrl;
+    document.getElementById('reference-url').value = data.fileUrl;
+    status.textContent = 'Locked and loaded. Expires in 3 days.';
+    status.className = 'upload-status ready';
+
+  } catch (err) {
+    status.textContent = 'Upload failed: ' + err.message;
+    status.className = 'upload-status error';
+    uploadedFileUrl = '';
+    document.getElementById('reference-url').value = '';
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      // Strip the data:...;base64, prefix
+      const result = reader.result;
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function clearUploadedFile() {
+  uploadedFileUrl = '';
+  document.getElementById('reference-url').value = '';
+  document.getElementById('file-input').value = '';
+  document.getElementById('drop-zone-content').style.display = 'block';
+  document.getElementById('drop-zone-file').style.display = 'none';
+  document.getElementById('drop-zone').classList.remove('has-file');
+}
+
+function toggleSecretUrl() {
+  const row = document.getElementById('secret-url-row');
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUNO GENERATION (via Kie.ai)
+// ═══════════════════════════════════════════════════════════════
+let pollTimer = null;
+
+async function fetchCredits() {
+  try {
+    const resp = await fetch('/api/suno-credits');
+    if (resp.ok) {
+      const data = await resp.json();
+      const badge = document.getElementById('credits-badge');
+      if (badge && data.data) {
+        badge.textContent = `Credits: ${data.data.remainingCredits ?? data.data.credits ?? '?'}`;
+      }
+    }
+  } catch (e) { /* silent fail for credits */ }
+}
+
+async function generateSong() {
+  const title = document.getElementById('song-title').value.trim();
+  const style = document.getElementById('final-style-output').textContent;
+  const lyrics = document.getElementById('final-lyrics-output').textContent;
+  const referenceUrl = document.getElementById('reference-url').value.trim();
+
+  if (!title) { alert('Please enter a song title.'); return; }
+  if (!style || style === 'Pick a genre and watch your prompt write itself...') {
+    alert('Please build a style prompt first (Style tab).'); return;
+  }
+  if (!state.instrumental && (!lyrics || lyrics === 'Your lyrics will appear here...')) {
+    alert('Please enter lyrics first (Collect tab).'); return;
+  }
+  if (!referenceUrl) {
+    if (!confirm('No source audio URL provided. Generate without a cover reference?')) return;
+  }
+
+  // Read cover mix controls
+  const audioWeight = parseFloat(document.getElementById('audio-weight').value);
+  const styleWeight = parseFloat(document.getElementById('style-weight').value);
+  const weirdnessConstraint = parseFloat(document.getElementById('weirdness-constraint').value);
+
+  // Get vocal gender from Panel 1 if set
+  const vocalGenderEl = document.getElementById('vocal-gender');
+  const vocalGender = vocalGenderEl ? (vocalGenderEl.value === 'male' ? 'm' : vocalGenderEl.value === 'female' ? 'f' : '') : '';
+
+  const btn = document.getElementById('btn-generate');
+  const progress = document.getElementById('generate-progress');
+  const result = document.getElementById('generate-result');
+  const errorDiv = document.getElementById('generate-error');
+  const statusSpan = document.getElementById('generate-status');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Generating...';
+  progress.style.display = 'block';
+  result.style.display = 'none';
+  errorDiv.style.display = 'none';
+  statusSpan.textContent = '';
+  updateProgress(5, referenceUrl ? 'Sending cover to Suno V5...' : 'Sending to Suno V5...');
+
+  try {
+    const body = { title, style, lyrics: state.instrumental ? '[Instrumental]' : lyrics, instrumental: state.instrumental };
+    if (referenceUrl) {
+      body.referenceUrl = referenceUrl;
+      body.audioWeight = audioWeight;
+      body.styleWeight = styleWeight;
+      body.weirdnessConstraint = weirdnessConstraint;
+    }
+    if (vocalGender) body.vocalGender = vocalGender;
+
+    const resp = await fetch('/api/suno-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || 'Generation request failed');
+    }
+
+    const data = await resp.json();
+    if (!data.taskId) throw new Error('No task ID returned');
+
+    updateProgress(10, 'Queued — waiting for Suno...');
+    pollForResult(data.taskId, 0);
+
+  } catch (err) {
+    showGenerateError(err.message);
+    resetGenerateButton();
+  }
+}
+
+function pollForResult(taskId, attempt) {
+  if (attempt >= 72) { // 6 minutes at 5s intervals
+    showGenerateError('Generation timed out after 6 minutes. The task may still be processing — try refreshing later.');
+    resetGenerateButton();
+    return;
+  }
+
+  pollTimer = setTimeout(async () => {
+    try {
+      const resp = await fetch(`/api/suno-status?taskId=${encodeURIComponent(taskId)}`);
+      if (!resp.ok) throw new Error(`Status check failed: HTTP ${resp.status}`);
+
+      const data = await resp.json();
+      const status = data.data?.status;
+
+      if (status === 'SUCCESS') {
+        updateProgress(100, 'Complete!');
+        const sunoData = data.data?.response?.sunoData;
+        if (sunoData && sunoData.length > 0) {
+          showAudioResults(sunoData);
+        } else {
+          showGenerateError('Generation completed but no audio data returned.');
+        }
+        resetGenerateButton();
+        fetchCredits();
+        return;
+      }
+
+      if (status && (status.includes('ERROR') || status.includes('FAIL'))) {
+        const msg = data.data?.errorMessage || data.data?.failReason || data.data?.response?.failReason || status;
+        throw new Error(`Generation failed: ${msg}`);
+      }
+
+      // Still processing — update progress based on status
+      const statusMap = {
+        'PENDING': { label: 'Queued — waiting for Suno...', pct: 15 },
+        'SUBMITTED': { label: 'Submitted to Suno V5...', pct: 20 },
+        'TEXT_SUCCESS': { label: 'Lyrics processed — generating audio...', pct: 45 },
+        'FIRST_SUCCESS': { label: 'First track ready — finishing up...', pct: 75 },
+      };
+      const mapped = statusMap[status] || { label: `Processing (${status || 'waiting'})...`, pct: 25 };
+      updateProgress(mapped.pct, mapped.label);
+      pollForResult(taskId, attempt + 1);
+
+    } catch (err) {
+      showGenerateError(err.message);
+      resetGenerateButton();
+    }
+  }, 5000);
+}
+
+function updateProgress(pct, label) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = label;
+}
+
+function showAudioResults(sunoData) {
+  const container = document.getElementById('song-cards');
+  const result = document.getElementById('generate-result');
+  container.innerHTML = '';
+
+  sunoData.forEach((song, i) => {
+    const audioSrc = song.audioUrl || song.streamAudioUrl;
+    const safeName = (song.title || 'song').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const downloadUrl = `/api/suno-download?url=${encodeURIComponent(audioSrc)}&filename=${encodeURIComponent(safeName + '.mp3')}`;
+
+    const card = document.createElement('div');
+    card.innerHTML = `
+      <div class="song-card">
+        ${song.imageUrl ? `<img class="song-card-art" src="${song.imageUrl}" alt="Cover art">` : ''}
+        <div class="song-card-info">
+          <div class="song-card-title">${song.title || 'Untitled'} ${sunoData.length > 1 ? `(Track ${i + 1})` : ''}</div>
+          <div class="song-card-meta">${song.duration ? Math.round(song.duration) + 's' : ''} ${song.tags ? '· ' + song.tags : ''}</div>
+        </div>
+      </div>
+      <div class="audio-player-container">
+        <audio controls preload="metadata" src="${audioSrc}"></audio>
+      </div>
+      <div class="generate-result-row">
+        <a href="${downloadUrl}" class="btn btn-copy btn-sm">Download MP3</a>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  result.style.display = 'block';
+  document.getElementById('generate-progress').style.display = 'none';
+}
+
+function showGenerateError(msg) {
+  const errorDiv = document.getElementById('generate-error');
+  const lowerMsg = msg.toLowerCase();
+  if (lowerMsg.includes('copyright') || lowerMsg.includes('copyrighted')) {
+    errorDiv.innerHTML = '<strong>Error:</strong> Suno flagged the uploaded audio as copyrighted. This is Suno\'s content filter — even instrumentals can trigger it.<br><br>Try: <button onclick="clearSourceAndRetry()" style="padding:4px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--bg-input);color:var(--accent);cursor:pointer;font-size:12px;">Generate without source audio</button> or upload a different file.';
+  } else {
+    errorDiv.textContent = 'Error: ' + msg;
+  }
+  errorDiv.style.display = 'block';
+  document.getElementById('generate-progress').style.display = 'none';
+}
+
+function clearSourceAndRetry() {
+  document.getElementById('reference-url').value = '';
+  uploadedFileUrl = '';
+  document.getElementById('generate-error').style.display = 'none';
+  generateSong();
+}
+
+function resetGenerateButton() {
+  const btn = document.getElementById('btn-generate');
+  btn.disabled = false;
+  btn.textContent = 'Generate';
+  if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // CLIPBOARD
 // ═══════════════════════════════════════════════════════════════
+const COPY_MSGS = ['Copied!', 'Got it!', 'On the clipboard!', 'Snagged!'];
 function copyToClipboard(elementId, btn) {
   const text = document.getElementById(elementId).textContent;
   navigator.clipboard.writeText(text).then(() => {
     btn.classList.add('copied');
     const orig = btn.textContent;
-    btn.textContent = 'Copied!';
+    btn.textContent = COPY_MSGS[Math.floor(Math.random() * COPY_MSGS.length)];
     setTimeout(() => {
       btn.classList.remove('copied');
       btn.textContent = orig;
     }, 1500);
   });
 }
+
+// ═══════════════════════════════════════════════════════════════
+// EASTER EGGS
+// ═══════════════════════════════════════════════════════════════
+(function initEasterEggs() {
+  // Weirdness slider: label changes at max
+  const ws = document.getElementById('weirdness-constraint');
+  if (ws) {
+    const origHandler = ws.getAttribute('oninput');
+    ws.setAttribute('oninput', origHandler + "; document.querySelector('[for=weirdness-constraint], label:has(#wc-val)');" +
+      "if(parseFloat(this.value)>=1){document.getElementById('wc-val').textContent='Maximum Chaos'}" +
+      "else{document.getElementById('wc-val').textContent=this.value}");
+    // Cleaner: override oninput
+    ws.oninput = function() {
+      const v = parseFloat(this.value);
+      const label = document.getElementById('wc-val');
+      if (v >= 1) { label.textContent = 'Maximum Chaos'; label.style.fontWeight = '700'; }
+      else { label.textContent = this.value; label.style.fontWeight = ''; }
+    };
+  }
+
+  // BPM 420 easter egg
+  const bpm = document.getElementById('bpm-input');
+  if (bpm) {
+    bpm.addEventListener('change', () => {
+      if (parseInt(bpm.value) === 420) {
+        const flash = document.createElement('span');
+        flash.className = 'easter-flash';
+        flash.textContent = '\u{1F33F}';
+        bpm.parentNode.appendChild(flash);
+        setTimeout(() => flash.remove(), 1500);
+      }
+    });
+  }
+
+})();
 </script>
 </body>
 </html>

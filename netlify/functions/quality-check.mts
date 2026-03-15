@@ -10,7 +10,7 @@ export default async (req: Request) => {
   }
 
   try {
-    const { lyrics, genre, bpm, stylePrompt } = await req.json();
+    const { lyrics, genre, bpm, stylePrompt, mode, fixes } = await req.json();
 
     if (!lyrics || !genre) {
       return new Response(JSON.stringify({ error: "Missing required fields: lyrics, genre" }), {
@@ -28,6 +28,42 @@ export default async (req: Request) => {
     }
 
     const client = new Anthropic({ apiKey });
+
+    // FIX MODE: rewrite lyrics based on quality check fixes
+    if (mode === "fix" && fixes) {
+      const fixPrompt = `You are a Suno V5 lyric fixer. Rewrite the provided lyrics to address the issues listed below. Preserve the original meaning, voice, and structure tags (like [Verse 1], [Chorus], etc.) exactly. Only change what's needed to fix the issues.
+
+Genre: ${genre}
+BPM: ${bpm || "not specified"}
+Style Prompt: ${stylePrompt || "not specified"}
+
+## ISSUES TO FIX
+${fixes.map((f: any) => `- ${f.name}: ${f.fix}`).join("\n")}
+
+## RULES
+- Keep ALL structure tags exactly as they are ([Verse 1], [Chorus], [Bridge], etc.)
+- Preserve the song's meaning, tone, and emotional arc
+- Only modify lines that need fixing
+- Maintain the same number of sections
+- Output ONLY the fixed lyrics, no explanation, no markdown`;
+
+      const fixMessage = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 3000,
+        messages: [{ role: "user", content: `Fix these lyrics:\n\n${lyrics}` }],
+        system: fixPrompt
+      });
+
+      const fixedLyrics = fixMessage.content
+        .filter((block: any) => block.type === "text")
+        .map((block: any) => block.text)
+        .join("");
+
+      return new Response(JSON.stringify({ fixedLyrics }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
     const systemPrompt = `You are a Suno V5 lyric quality analyst. Analyze the provided lyrics against a 13-point quality checklist, considering the specified genre and BPM.
 
